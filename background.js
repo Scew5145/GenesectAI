@@ -62,7 +62,10 @@ var pokemon_confirmed = {
 
     }
 }
-var pokemon_model = {} // Same as above, but is only values that don't exist but need to. "Unconfirmed"
+var pokemon_model = {
+    user: {},
+    opponent : {}
+} // Same as above, but is only values that don't exist but need to. "Unconfirmed"
 var battle_info = {
     turn: 0,
     weather: null,
@@ -87,29 +90,14 @@ var battle_info = {
     }
 }
 var usage_stats = {} // Format is  pokemon: {stats}
-var turn_log = {
-    /*
-        TODO: this when it becomes useful
-        format example
-        new information should be shown as the info dicts keys so that a replacing union can be done on each var
-        1: {
-            pokemon: {
-                opponent: {
-                    ...
-                }
-            }
-            battle_info: {
-                ...
-            }
-        }
-    */
-}
 var usage_key_links = {}
+
+
 function import_relevant_usage_stats(usage_json){
     // Function for doing the initial json pull and storing it to usage_stats.
     // This should only ever be called once (partially because the usage json is FAT)
     const url = chrome.runtime.getURL('data/lower_to_upper.json');
-    console.log(usage_json)
+    // console.log(usage_json)
     for (var key in pokemon_confirmed.opponent){
         usage_stats[key] = usage_json.data[key]
     }
@@ -120,11 +108,12 @@ function import_relevant_usage_stats(usage_json){
     });
 }
 
+
 function get_turn(node){
-    // TODO: iterate backwards through battle history until we hit a h2 node (jquery?), return it's turn number
-    //console.log("call from get_turn")
-    //console.log(node)
-    //console.log($(node).prevUntil('h2.battle-history').prev())
+    /*
+    gets the above header of the battle-history node given. returns 0 if no turns were executed before this node.
+    return: int
+    */
     if(node.nodeName == 'H2'){
         return parseInt(node.innerText.substr(5))
     }
@@ -139,31 +128,8 @@ function get_turn(node){
     return parseInt(current.innerText.substr(5))
 
 }
-function parse_bh_node(node){
-    // Parse a battle history node
-    // TODO: If the opponent reveals
-    // h2 nodes are "New turn" nodes.
-    if (get_turn(node) < battle_info['turn']){
-        // This case may never come up if everything is always ordered properly. Can check and delete if not important
-        //console.log("Hit a bad turn node! Info:")
-        //console.log(node)
-        //console.log("Perceived turn: "+ get_turn(node))
-        //console.log("Actual turn: "+ battle_info['turn'])
-        return
-    }else if (get_turn(node) > battle_info['turn']){
-        battle_info['turn'] = get_turn(node)
-        if (node.nodeName == "H2"){ // Case: just started a new turn
-            // TODO: active field update called here
-            // TODO: check where a new turn is considered in the case of a faint
-            // Store turn info from the last round
-            console.log("Updating turn info before")
-            console.log(node)
-            battle_info['turn'] = get_turn(node)
-            get_turn_information(node)
-            return
-        }
-    }
-}
+
+
 function damage_analysis(name,move){
     // TODO: function for inferring information from the incoming move
     // Low priority
@@ -194,6 +160,8 @@ function damage_analysis(name,move){
     */
     return
 }
+
+
 function get_turn_information(turn_end_header){
     // Information gain, update our enemy team model
     // Case 0: Mega evolve. Confirm item, change pokemon, keep moves
@@ -223,11 +191,11 @@ function get_turn_information(turn_end_header){
             // They contain the user's username, and the teams, separated by spaced forward slashes
 
             var temp_username = $(this).find("strong").text().slice(0, -8).trim()
-            console.log(temp_username + " temp user")
+            // console.log(temp_username + " temp user")
             if (battle_info.username.user != temp_username && battle_info.username.user){
                 battle_info.username.opponent = temp_username
                 var team_string = $(this).find("em").text()
-                console.log(team_string)
+                // console.log(team_string)
                 var team_split = team_string.split("/") // Don't need to worry about nicknames here
                 team_split = team_split.map(s => s.trim())
                 team_split.forEach(function(enemy_poke){
@@ -240,6 +208,7 @@ function get_turn_information(turn_end_header){
                     output_poke_confirmed['weight'] = pokedex_entry['w']
                     output_poke_confirmed['status'] = "Healthy"
                     pokemon_confirmed.opponent[enemy_poke] = output_poke_confirmed
+                    pokemon_model.opponent[enemy_poke] = {}
                     // Time to make some guesses
                     var output_poke_model = {}
 
@@ -252,9 +221,9 @@ function get_turn_information(turn_end_header){
                 console.assert(team_split.length == 6)
             }else{
                 // TODO: Blank username race condition fix
-                console.log("Not opponent username or blank user.username:")
-                console.log(temp_username)
-                console.log(battle_info.username.user)
+                // console.log("Not opponent username or blank user.username:")
+                // console.log(temp_username)
+                // console.log(battle_info.username.user)
             }
         }
         else if (info_string.startsWith("The opposing")){
@@ -284,10 +253,11 @@ function get_turn_information(turn_end_header){
             var poke_name = $(this).find("strong").text()
             var parsed_nick = info_string.replace(battle_info.username.opponent + " sent out ", '')
             // TODO: No nickname case is getting an exclamation point at the end. Fix with a slice? Other tricks?
-            if (parsed_nick == (poke_name + "!↵")){
+            if (parsed_nick == (poke_name + "!\n")){
                 parsed_nick = parsed_nick.slice(0, -2)
             }
             else{
+                console.log("("+parsed_nick+")")
                 parsed_nick = parsed_nick.replace('(' +poke_name+ ')', '').slice(0,-3)
             }
             battle_info.nicknames.opponent[parsed_nick] = poke_name
@@ -300,6 +270,9 @@ function get_turn_information(turn_end_header){
         }
     })
 
+    // Once we're done parsing the battle history, we can guarantee we have a nickname for each pokemon shown, so
+    // icon parsing won't break (probably)
+    get_active_field()
     return
     /*
 
@@ -315,6 +288,25 @@ function get_turn_information(turn_end_header){
     // Case 4: Enemy Ability information was given. set ability of pokemon
     // TODO: Transform the battle info divs from the last turn into an array of strings
 }
+
+
+function get_active_field(){
+    if (!room) {
+        return console.error("No active battle room. Can't do active field parse.")
+    }
+    console.log("inner battle parsing")
+    var innerbattle = $(room).find(".innerbattle")
+    innerbattle.children().each(function(){
+        //console.log('ibp')
+        //console.log(this)
+        if (this.className.includes("weather")) {
+            parse_weather_node(this)
+        }else if (this.className == 'leftbar' || this.className == 'rightbar') {
+            parse_team_list(this)
+        }
+    })
+}
+
 
 function parse_weather_node(node){
     // For parsing the weather field nodes
@@ -355,6 +347,63 @@ function parse_weather_node(node){
 }
 
 
+function parse_team_list(list_node){
+    var me_or_them = ""
+    if ($(list_node).find("strong").text() == battle_info.username.opponent){
+        me_or_them = "opponent"
+    }else{
+        me_or_them = "user"
+    }
+    console.log("Parsing team list for " + me_or_them)
+    console.log($(list_node).find(".picon"))
+    var icons = $(list_node).find(".picon").each(function(){
+        // console.log(this)
+        var icon_text = this.title
+        // First, parse HP or active status
+        var last_parens = icon_text.slice(icon_text.lastIndexOf("(")+1,icon_text.lastIndexOf(")"))
+        var hp_reg = /[0-9]+%/
+        var hp_float = -1
+        if(last_parens == "active"){
+            //console.log(" Active pokemon. Trimming")
+            icon_text = icon_text.slice(0, icon_text.lastIndexOf("(")-1)
+        }else if(hp_reg.test(last_parens)){
+            //console.log("Matches HP regex. doing current HP routine")
+            //console.log(last_parens)
+            hp_float = parseFloat(last_parens.slice(0,-1))*0.01
+            icon_text = icon_text.slice(0, icon_text.lastIndexOf("(")-1)
+            last_parens = icon_text.slice(icon_text.lastIndexOf("(")+1,icon_text.lastIndexOf(")"))
+        }
+        console.log("post trim")
+        console.log(icon_text)
+        if(hp_float != -1){
+            if(pokemon_confirmed[me_or_them][last_parens]){
+                //console.log("Nickname case")
+                //console.log(last_parens)
+                if(pokemon_confirmed[me_or_them][last_parens].maxHP){
+                    pokemon_confirmed[me_or_them][last_parens].curHP = pokemon_confirmed[me_or_them][last_parens].maxHP*hp_float
+                }else{
+                    pokemon_model[me_or_them][last_parens].curHP = pokemon_model[me_or_them][last_parens].maxHP*hp_float
+                }
+            }else{
+                //console.log("No nickname case")
+                //console.log(icon_text)
+                if(pokemon_confirmed[me_or_them][icon_text].maxHP){
+                    pokemon_confirmed[me_or_them][icon_text].curHP = pokemon_confirmed[me_or_them][icon_text].maxHP*hp_float
+                }else{
+                    pokemon_model[me_or_them][icon_text].curHP = pokemon_model[me_or_them][icon_text].maxHP*hp_float
+                }
+
+            }
+            console.log(hp_float +",pc,pm")
+            console.log(pokemon_confirmed)
+            console.log(pokemon_model)
+        }
+
+    })
+
+}
+
+
 var battle_node = null
 function bs_callback(mutationList, observer) {
     //console.log("new mutation")
@@ -376,7 +425,10 @@ function bs_callback(mutationList, observer) {
                     else if (node.className && node.className.includes('battle-history')){
                         //console.log(node)
                         //console.log("mut")
-                        parse_bh_node(node)
+                        if (node.nodeName == "H2"){ // Case: just started a new turn
+                            battle_info['turn'] = get_turn(node)
+                            get_turn_information(node)
+                        }
                     }
                     else if (mutation.target.className == 'userbar' && node.nodeName == "SPAN" && node.className == "username"){
                         battle_info.username.user = $(node).text().trim()
@@ -387,12 +439,6 @@ function bs_callback(mutationList, observer) {
                 })
             }
 
-        }else if (mutation.type == 'attributes') {
-            // look for weather here in mutation.target.div.weather
-            if (mutation.target.className.includes("weather")){
-            // Case: our blank weather node got a new secondary class of '{type_of_weather}weather'
-                mutation.target
-            }
         }
         // TODO: cross off parsed info for opponent as this is parsed
         // TODO: get the pokemon info for the team that will be used. (find HO team because it's easier)
