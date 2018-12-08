@@ -363,9 +363,11 @@ function parse_team_list(list_node){
         var last_parens = icon_text.slice(icon_text.lastIndexOf("(")+1,icon_text.lastIndexOf(")"))
         var hp_reg = /[0-9]+%/
         var hp_float = -1
+        var active_poke = false
         if(last_parens == "active"){
             //console.log(" Active pokemon. Trimming")
             icon_text = icon_text.slice(0, icon_text.lastIndexOf("(")-1)
+            active_poke = true
         }else if(hp_reg.test(last_parens)){
             //console.log("Matches HP regex. doing current HP routine")
             //console.log(last_parens)
@@ -375,6 +377,18 @@ function parse_team_list(list_node){
         }
         console.log("post trim")
         console.log(icon_text)
+        if(active_poke){
+            if(pokemon_confirmed[me_or_them][last_parens]){
+                battle_info.active_pokemon[me_or_them] = last_parens
+            }else if (pokemon_confirmed[me_or_them][icon_text]){
+                battle_info.active_pokemon[me_or_them] = icon_text
+            }else{
+                console.error("Something is broken with parsing pokemon name for user list. it, lp")
+                console.log(icon_text)
+                console.log(last_parens)
+            }
+        }
+
         if(hp_float != -1){
             if(pokemon_confirmed[me_or_them][last_parens]){
                 //console.log("Nickname case")
