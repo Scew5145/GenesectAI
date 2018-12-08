@@ -6,7 +6,13 @@
   "content_scripts":[
     {
       "matches": ["*://play.pokemonshowdown.com/*"],
-      "js": ["thirdParty/jquery-3.3.1.min.js","damagecalc/move_data.js","damagecalc/pokedex.js","background.js"]
+      "js": [ "thirdParty/jquery-3.3.1.min.js",
+              "damagecalc/stat_data.js",
+              "damagecalc/move_data.js",
+              "damagecalc/pokedex.js",
+              "damagecalc/ability_data.js",
+              "background.js"
+            ]
     }],
   "web_accessible_resources": [
     "data/*.json"

@@ -10,13 +10,13 @@ var observerOptions = {
       subtree: true
 }
 
-var all_pokemon_confirmed = {
-/* example version of the all_pokemon object
+var pokemon_confirmed = {
+/* example version of the team objects
 {
     "user":{
         "Tapu Bulu":{
             name: string (actual pokedex name)
-            // These are base stats
+            // These are post-calc stats
             rawStats: {
                 SD: 10,
                 SA: 11,
@@ -45,7 +45,7 @@ var all_pokemon_confirmed = {
             ability: almost certainly a string,
             status: "Healthy" by default, psn --> Poisoned, brn --> Burned, etc.,
             item: string,
-            moves: [string, string...?],
+            moves: [move_object, move_object2...4],
             weight: float,
             gender: male/female/genderless? need to check, only use if absolutely necessary b/c annoying to parse,
         },
@@ -62,8 +62,7 @@ var all_pokemon_confirmed = {
 
     }
 }
-
-var all_pokemon_model = {} // Same as above, but is only values that don't exist but need to. "Unconfirmed"
+var pokemon_model = {} // Same as above, but is only values that don't exist but need to. "Unconfirmed"
 var battle_info = {
     turn: 0,
     weather: null,
@@ -73,7 +72,7 @@ var battle_info = {
     spikes: 0,
     toxic_spikes: 0,
     active_pokemon: {
-        user: null, // pokedex name so that you can go all_pokemon_confirmed.opponent[battle_info.active_pokemon.opponent]
+        user: null, // pokedex name so that you can go pokemon_confirmed.opponent[battle_info.active_pokemon.opponent]
         opponent: null
     },
     nicknames:  {
@@ -81,15 +80,20 @@ var battle_info = {
             //nickname: pokedex name
         },
         opponent: {}
+    },
+    username: {
+        user: null,
+        opponent: null
     }
 }
-
+var usage_stats = {} // Format is  pokemon: {stats}
 var turn_log = {
     /*
+        TODO: this when it becomes useful
         format example
         new information should be shown as the info dicts keys so that a replacing union can be done on each var
         1: {
-            all_pokemon: {
+            pokemon: {
                 opponent: {
                     ...
                 }
@@ -99,6 +103,21 @@ var turn_log = {
             }
         }
     */
+}
+var usage_key_links = {}
+function import_relevant_usage_stats(usage_json){
+    // Function for doing the initial json pull and storing it to usage_stats.
+    // This should only ever be called once (partially because the usage json is FAT)
+    const url = chrome.runtime.getURL('data/lower_to_upper.json');
+    console.log(usage_json)
+    for (var key in pokemon_confirmed.opponent){
+        usage_stats[key] = usage_json.data[key]
+    }
+    console.log(usage_stats)
+    fetch(url).then((response) => response.json()).then((json) => {
+        usage_key_links = json
+        console.log(usage_key_links)
+    });
 }
 
 function get_turn(node){
@@ -126,10 +145,10 @@ function parse_bh_node(node){
     // h2 nodes are "New turn" nodes.
     if (get_turn(node) < battle_info['turn']){
         // This case may never come up if everything is always ordered properly. Can check and delete if not important
-        console.log("Hit a bad turn node! Info:")
-        console.log(node)
-        console.log("Perceived turn: "+ get_turn(node))
-        console.log("Actual turn: "+ battle_info['turn'])
+        //console.log("Hit a bad turn node! Info:")
+        //console.log(node)
+        //console.log("Perceived turn: "+ get_turn(node))
+        //console.log("Actual turn: "+ battle_info['turn'])
         return
     }else if (get_turn(node) > battle_info['turn']){
         battle_info['turn'] = get_turn(node)
@@ -145,7 +164,34 @@ function parse_bh_node(node){
         }
     }
 }
-function offensive_move_analysis(name,move){
+function damage_analysis(name,move){
+    // TODO: function for inferring information from the incoming move
+    // Low priority
+    /*
+    2a: It was a z-move
+        * confirm item as z-crystal corresponding to move, remove the z move from possible moves (if it exists in model)
+        * for now, don't do any calcs on possible z moves from incoming damage, just break;
+    2b: It did damage and it was above expected range
+        * all of these cases should be qualified by "if the thing is confirmed, skip those cases"
+        * for each ability, try damage calc again. If we find a suitable range, change model ability. break;
+        * If it was more and ability didn't change, check EV spread + nature.
+            * Iterate down spreads until we hit a match or a maximized one
+            * if it's maximized, use this spread instead.
+            * Otherwise, if we're in range, break;
+        * go through the following cases. DON'T recalculate EVs after.
+        * if model item isn't life orb, look for life orb text.
+            * if life orb text existed, confirm item as life orb. break;
+        * if model item isn't corresponding type plate, calc damage with type plate
+            * within temp range, set model item to type plate (don't confirm, could be specs)
+            * break;
+        * if model item isn't specs
+            * try specs. if in range, yes. Else, no.
+    2c: Less than expected range
+        * check faint case, ignore if it happened
+        * check abilities, break if found
+        * check EVs until 0 EV, neutral or less nature or a match found
+        * check if positive item in model, decrement in terms of power until we find one that matches
+    */
     return
 }
 function get_turn_information(turn_end_header){
@@ -154,25 +200,76 @@ function get_turn_information(turn_end_header){
     // Case 1: Enemy used a move we know about. decrement PP.
     // Case 2: Enemy used a move we haven't seen before. Run a movepool update (separate function?)
 
+    // REALLY BIG TODO: NEED TO FIGURE OUT HOW TO WAIT FOR TURN INFO TO EITHER UPDATE OR TO SAVE PLAYER AS OPP. IN SOME CASES
+    // Basically, the battle log is first saved from the perspective of player_1, regardless of who is on each side, and then
+    // transformed afterward. This basically means I NEED a username at the very least before parsing a line.
+    // Yay. Double the parsing.
     // Go to the top of the turn, iterate through actions
-    var rev_history = $(turn_end_header).prevUntil("h2.battle-history",".battle-history").not(".spacer")
+    var history = $(turn_end_header).prevUntil("h2.battle-history",".battle-history").not(".spacer")
+    var rev_history = $(history.get().reverse())
     console.log("History before node:")
     console.log(turn_end_header)
     console.log(rev_history)
-    var history = rev_history.get().reverse()
-    $(history).each(function(){
+    console.log(history)
+    // TODO: make sure to grab nicknames / active data in general
+
+    $(rev_history).each(function(){
         var info_string = this.innerText
-        // TODO: Regex matches for each of the info messages to simplify stuff
+        // TODO: Regex matches for some of the info messages to simplify stuff
         // Start with move model don't bother with the other stuff until completed predictor
-        if (info_string.startsWith("The opposing")){
-            // Case: move from opponent. Add to confirmed movepool & do
+        if (this.className == "chat battle-history") {
+            // Case: We loaded turn 0, AKA "no information" state.
+            // chat battle-history nodes only show up when both users first enter the battle.
+            // They contain the user's username, and the teams, separated by spaced forward slashes
+
+            var temp_username = $(this).find("strong").text().slice(0, -8).trim()
+            console.log(temp_username + " temp user")
+            if (battle_info.username.user != temp_username && battle_info.username.user){
+                battle_info.username.opponent = temp_username
+                var team_string = $(this).find("em").text()
+                console.log(team_string)
+                var team_split = team_string.split("/") // Don't need to worry about nicknames here
+                team_split = team_split.map(s => s.trim())
+                team_split.forEach(function(enemy_poke){
+                    // Confirmed Data first
+                    var pokedex_entry = POKEDEX_SM[enemy_poke]
+                    var output_poke_confirmed = {}
+                    output_poke_confirmed['name'] = enemy_poke
+                    output_poke_confirmed['type1'] = pokedex_entry['t1']
+                    output_poke_confirmed['type2'] = pokedex_entry['t2']
+                    output_poke_confirmed['weight'] = pokedex_entry['w']
+                    output_poke_confirmed['status'] = "Healthy"
+                    pokemon_confirmed.opponent[enemy_poke] = output_poke_confirmed
+                    // Time to make some guesses
+                    var output_poke_model = {}
+
+                })
+                const url = chrome.runtime.getURL('data/gen7ou-1500.json');
+                fetch(url)
+                    .then((response) => response.json())
+                    .then((json) => import_relevant_usage_stats(json));
+                console.log(pokemon_confirmed)
+                console.assert(team_split.length == 6)
+            }else{
+                // TODO: Blank username race condition fix
+                console.log("Not opponent username or blank user.username:")
+                console.log(temp_username)
+                console.log(battle_info.username.user)
+            }
+        }
+        else if (info_string.startsWith("The opposing")){
+            // Case: move from opponent. Add to confirmed movepool & do damage hypothesis stuff
             // Form: The opposing {nickname} used {move}!
+            // TODO: This startsWith isn't enough to confirm that a move is being used.
+            //      For example, intimidate hitting the opponent is enough to trigger this state right now
             // TODO: This runs into errors if nickname contains " used ". fix eventually when bored
             var move = {}
             var nickname = info_string.substring(13, info_string.indexOf(" used "))
-            move['name'] = info_string.substring(info_string.indexOf(" used ")+6, info_string.length - 2)
-            console.assert(battle_info.nicknames.opponent[nickname] == battle_info.active_pokemon.opponent)
-            // TODO: right here, add the move to the confirmed model
+
+            // TODO: this is always in a <strong> in the case of a move. look for that instead?
+            var move_name = $(this).find("strong").text()
+            move = MOVES_SM[move_name]
+
             var subtext = ''
             if($(this).next().text() == "A critical hit!"){
                 subtext = $(this).next().next().text()
@@ -180,43 +277,32 @@ function get_turn_information(turn_end_header){
             }else{
                 subtext = $(this).next().text()
             }
-
-            // TODO: get base move data from data/moves (bp/type/etc), write the following function
-            // See below super comment
-            offensive_move_analysis(battle_info.nicknames.opponent[nickname], move)
-
-            console.log("sub" + subtext)
-            console.log(nickname)
-            console.log(MOVES_XY[move['name']])
-        }else{
+            damage_analysis(battle_info.nicknames.opponent[nickname], move)
+        }
+        else if (info_string.startsWith(battle_info.username.opponent + " sent out ")){
+            // Case: Nickname revealed, save it properly
+            var poke_name = $(this).find("strong").text()
+            var parsed_nick = info_string.replace(battle_info.username.opponent + " sent out ", '')
+            // TODO: No nickname case is getting an exclamation point at the end. Fix with a slice? Other tricks?
+            if (parsed_nick == (poke_name + "!↵")){
+                parsed_nick = parsed_nick.slice(0, -2)
+            }
+            else{
+                parsed_nick = parsed_nick.replace('(' +poke_name+ ')', '').slice(0,-3)
+            }
+            battle_info.nicknames.opponent[parsed_nick] = poke_name
+            console.log("Did nickname parse")
+            console.log(battle_info.username.opponent)
+            console.log(battle_info)
+        }
+        else {
             console.log($(this).text())
         }
     })
+
     return
     /*
-        2a: It was a z-move
-            * confirm item as z-crystal corresponding to move, remove the z move from possible moves (if it exists in model)
-            * for now, don't do any calcs on possible z moves from incoming damage, just break;
-        2b: It did damage and it was above expected range
-            * all of these cases should be qualified by "if the thing is confirmed, skip those cases"
-            * for each ability, try damage calc again. If we find a suitable range, change model ability. break;
-            * If it was more and ability didn't change, check EV spread + nature.
-                * Iterate down spreads until we hit a match or a maximized one
-                * if it's maximized, use this spread instead.
-                * Otherwise, if we're in range, break;
-            * go through the following cases. DON'T recalculate EVs after.
-            * if model item isn't life orb, look for life orb text.
-                * if life orb text existed, confirm item as life orb. break;
-            * if model item isn't corresponding type plate, calc damage with type plate
-                * within temp range, set model item to type plate (don't confirm, could be specs)
-                * break;
-            * if model item isn't specs
-                * try specs. if in range, yes. Else, no.
-        2c: Less than expected range
-            * check faint case, ignore if it happened
-            * check abilities, break if found
-            * check EVs until 0 EV, neutral or less nature or a match found
-            * check if positive item in model, decrement in terms of power until we find one that matches
+
         2d: before we expected them to go by speed (us - them)*(our speed - their speed)< 0:
             * if it's a priority move, ignore
             * check EV spreads until maximized, break if we find a spread
@@ -281,16 +367,22 @@ function bs_callback(mutationList, observer) {
 
         if (mutation.type == 'childList'){
             if (mutation.addedNodes.length){
+                // TODO: Teardown for battle finish when necessary
                 mutation.addedNodes.forEach((node)=>{
                     if (node.id && node.id.includes("room-battle-gen7ou") && node.tagName == "DIV"){
                         console.log(node)
                         room = node
                     }
-
-                    if (node.className && node.className.includes('battle-history')){
+                    else if (node.className && node.className.includes('battle-history')){
                         //console.log(node)
                         //console.log("mut")
                         parse_bh_node(node)
+                    }
+                    else if (mutation.target.className == 'userbar' && node.nodeName == "SPAN" && node.className == "username"){
+                        battle_info.username.user = $(node).text().trim()
+                        console.log("Loaded user ("+battle_info.username.user+")")
+
+
                     }
                 })
             }
@@ -346,14 +438,12 @@ function bs_callback(mutationList, observer) {
     });
 }
 
-// Load up our observers
 $(document.body).ready(function(){
-    console.log("Running the thing");
+    console.log("Init state");
     var battle_start_obs = new MutationObserver(bs_callback)
-    console.log(document.body)
-    // TODO: Remove the random shit right here
-    console.log("TESTING IMPORTS")
-    console.log(POKEDEX_XY["Venusaur"])
+
+    console.log(battle_info)
+
     battle_start_obs.observe(document.body,observerOptions)
     $("div", $("body")).each(function(){
         // console.log(this)
