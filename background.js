@@ -18,19 +18,19 @@ var pokemon_confirmed = {
             name: string (actual pokedex name)
             // These are post-calc stats
             rawStats: {
-                SD: 10,
-                SA: 11,
-                AT: 12,
-                DF: 13,
-                SP: 14,
+                sd: 10,
+                sa: 11,
+                at: 12,
+                df: 13,
+                sp: 14,
             },
             boosts: { // Must be filled out
-                SD: 1,
-                AT: 1.5,
+                sd: 1,
+                at: 1.5,
                 ...
             },
             evs: {
-                SD: 0-252
+                sd: 0-252
                 ...
             },
 
@@ -56,7 +56,221 @@ var pokemon_confirmed = {
     }
 }*/
     user:{
-
+        "Heatran":{
+            name: "Heatran",
+            moves:[
+                MOVES_SM["Earth Power"],
+                MOVES_SM["Taunt"],
+                MOVES_SM["Nature Power"],
+                MOVES_SM["Magma Storm"]
+            ],
+            rawStats: {
+                at: 166,
+                df: 248,
+                sa: 359,
+                sd: 249,
+                sp: 278
+            },
+            evs: {
+                at: 0,
+                df: 0,
+                sa: 252,
+                sd: 4,
+                sp: 252
+            },
+            boosts: {
+                at: 1,
+                df: 1,
+                sa: 1,
+                sd: 1,
+                sp: 1
+            },
+            HPEVs: 0,
+            nature: "Timid",
+            ability: "Flash Fire",
+            item: "Firium Z",
+            maxHP: 323,
+            curHP: 323,
+            level: 100,
+            status: "Healthy",
+            type1: "Fire",
+            type2: "Steel",
+            weight: 430
+        },
+        "Landorus-Therian":{
+            name: "Landorus-Therian",
+            rawStats: {
+                at: 355,
+                df: 243,
+                sa: 221,
+                sd: 196,
+                sp: 293
+            },
+            evs: {
+                at: 116,
+                df: 108,
+                sa: 0,
+                sd: 0,
+                sp: 196
+            },
+            boosts: {
+                at: 1,
+                df: 1,
+                sa: 1,
+                sd: 1,
+                sp: 1
+            },
+            nature: "Jolly",
+            HPEVs: 88,
+            ability: "Intimidate",
+            item: "Choice Scarf",
+            maxHP: 341,
+            curHP: 341,
+            level: 100,
+            status: "Healthy",
+            type1: "Ground",
+            type2: "Flying",
+            weight: 68
+        },
+        "Reuniclus":{
+            name: "Reuniclus",
+            rawStats: {
+                at: 121,
+                df: 262,
+                sa: 286,
+                sd: 206,
+                sp: 110
+            },
+            evs: {
+                at: 0,
+                df: 212,
+                sa: 0,
+                sd: 0,
+                sp: 56
+            },
+            boosts: {
+                at: 1,
+                df: 1,
+                sa: 1,
+                sd: 1,
+                sp: 1
+            },
+            nature: "Bold",
+            HPEVs: 240,
+            item: "Leftovers",
+            ability: "Magic Guard",
+            maxHP: 421,
+            curHP: 421,
+            level: 100,
+            status: "Healthy",
+            type1: "Psychic",
+            type2: undefined,
+            weight: 20.1
+        },
+        "Tapu Bulu":{
+            name: "Tapu Bulu",
+            rawStats: {
+                at: 296,
+                df: 266,
+                sa: 185,
+                sd: 302,
+                sp: 210
+            },
+            evs: {
+                at: 0,
+                df: 0,
+                sa: 0,
+                sd: 196,
+                sp: 96
+            },
+            boosts: {
+                at: 1,
+                df: 1,
+                sa: 1,
+                sd: 1,
+                sp: 1
+            },
+            nature: "Careful",
+            HPEVs: 216,
+            item: "Leftovers",
+            maxHP: 335,
+            curHP: 335,
+            level: 100,
+            status: "Healthy",
+            type1: "Grass",
+            type2: "Fairy",
+            weight: 45.5
+        },
+        "Toxapex":{
+            name: "Toxapex",
+            rawStats: {
+                at: 117,
+                df: 431,
+                sa: 142,
+                sd: 333,
+                sp: 106
+            },
+            evs: {
+                at: 0,
+                df: 208,
+                sa: 0,
+                sd: 52,
+                sp: 0
+            },
+            boosts: {
+                at: 1,
+                df: 1,
+                sa: 1,
+                sd: 1,
+                sp: 1
+            },
+            nature: "Bold",
+            HPEVs: 248,
+            ability: "Regenerator",
+            maxHP: 303,
+            curHP: 303,
+            level: 100,
+            item: "Black Sludge",
+            status: "Healthy",
+            type1: "Poison",
+            type2: "Water",
+            weight: 14.5
+        },
+        "Tyranitar":{
+            name: "Tyranitar-Mega",
+            rawStats: {
+                at: 469,
+                df: 336,
+                sa: 203,
+                sd: 276,
+                sp: 216
+            },
+            evs: {
+                at: 252,
+                df: 0,
+                sa: 0,
+                sd: 0,
+                sp: 152
+            },
+            boosts: {
+                at: 1,
+                df: 1,
+                sa: 1,
+                sd: 1,
+                sp: 1
+            },
+            nature: "Adamant",
+            HPEVs: 104,
+            item: "Tyranitarite",
+            ability: "Sand Stream",
+            maxHP: 367,
+            curHP: 367,
+            level: 100,
+            status: "Healthy",
+            type1: "Rock",
+            type2: "Dark",
+            weight: 202
+        }
     },
     opponent:{
 
@@ -81,11 +295,18 @@ var battle_info = {
     nicknames:  {
         user: { //battle_info.nicknames.user[name] is a little clumsy but whatever
             //nickname: pokedex name
+            "asdsda/sss":"Toxapex",
+            "asdasddsadaf":"Reuniclus",
+            "butt":"Heatran",
+            "Tapu Bulu":"Tapu Bulu",
+            "Landorus":"Landorus-Therian",
+            "Tyranitar":"Tyranitar"
+
         },
         opponent: {}
     },
     username: {
-        user: null,
+        user: "aephids", // Avoids a race condition on page reload that's important (for now). TODO: better fix
         opponent: null
     }
 }
@@ -167,8 +388,6 @@ function get_turn_information(turn_end_header){
     // Case 0: Mega evolve. Confirm item, change pokemon, keep moves
     // Case 1: Enemy used a move we know about. decrement PP.
     // Case 2: Enemy used a move we haven't seen before. Run a movepool update (separate function?)
-
-    // REALLY BIG TODO: NEED TO FIGURE OUT HOW TO WAIT FOR TURN INFO TO EITHER UPDATE OR TO SAVE PLAYER AS OPP. IN SOME CASES
     // Basically, the battle log is first saved from the perspective of player_1, regardless of who is on each side, and then
     // transformed afterward. This basically means I NEED a username at the very least before parsing a line.
     // Yay. Double the parsing.
@@ -183,7 +402,6 @@ function get_turn_information(turn_end_header){
 
     $(rev_history).each(function(){
         var info_string = this.innerText
-        // TODO: Regex matches for some of the info messages to simplify stuff
         // Start with move model don't bother with the other stuff until completed predictor
         if (this.className == "chat battle-history") {
             // Case: We loaded turn 0, AKA "no information" state.
@@ -219,6 +437,7 @@ function get_turn_information(turn_end_header){
                     .then((json) => import_relevant_usage_stats(json));
                 console.log(pokemon_confirmed)
                 console.assert(team_split.length == 6)
+
             }else{
                 // TODO: Blank username race condition fix
                 // console.log("Not opponent username or blank user.username:")
@@ -235,7 +454,6 @@ function get_turn_information(turn_end_header){
             var move = {}
             var nickname = info_string.substring(13, info_string.indexOf(" used "))
 
-            // TODO: this is always in a <strong> in the case of a move. look for that instead?
             var move_name = $(this).find("strong").text()
             move = MOVES_SM[move_name]
 
@@ -252,7 +470,6 @@ function get_turn_information(turn_end_header){
             // Case: Nickname revealed, save it properly
             var poke_name = $(this).find("strong").text()
             var parsed_nick = info_string.replace(battle_info.username.opponent + " sent out ", '')
-            // TODO: No nickname case is getting an exclamation point at the end. Fix with a slice? Other tricks?
             if (parsed_nick == (poke_name + "!\n")){
                 parsed_nick = parsed_nick.slice(0, -2)
             }
@@ -269,10 +486,13 @@ function get_turn_information(turn_end_header){
             console.log($(this).text())
         }
     })
-
+    console.log(pokemon_confirmed)
     // Once we're done parsing the battle history, we can guarantee we have a nickname for each pokemon shown, so
-    // icon parsing won't break (probably)
+    // active field won't break (probably)
     get_active_field()
+
+    // Finished the "known" info parsing. Start making guesses
+    fill_model()
     return
     /*
 
@@ -286,7 +506,6 @@ function get_turn_information(turn_end_header){
     */
     // Case 3: Enemy switch happened. do nothing until we get a field update
     // Case 4: Enemy Ability information was given. set ability of pokemon
-    // TODO: Transform the battle info divs from the last turn into an array of strings
 }
 
 
@@ -303,6 +522,12 @@ function get_active_field(){
             parse_weather_node(this)
         }else if (this.className == 'leftbar' || this.className == 'rightbar') {
             parse_team_list(this)
+        }else{
+            var statbar_search = $(this).children(".statbar")
+            if(statbar_search.length){
+                //console.log("Found statbar nodes")
+                statbar_search.each(function(){parse_statbar_node(this)})
+            }
         }
     })
 }
@@ -317,27 +542,27 @@ function parse_weather_node(node){
             case 'sunweather': // fallthrough multiple statements is basically or operator
             case 'desolatelandweather': // same as below
             case 'sunnydayweather':
-                battle_info['weather'] = 'sun'
+                battle_info['weather'] = 'Sun'
                 break;
             case 'sandstormweather':
-                battle_info['weather'] = 'sand'
+                battle_info['weather'] = 'Sand'
                 break;
             case 'raindanceweather':
-            case 'primordialseaweather': // This might need to be different, or ignored for now
+            case 'primordialseaweather': // This might need to be different (heavy rain), or ignored for now
             case 'rainweather':
-                battle_info['weather'] = 'rain'
+                battle_info['weather'] = 'Rain'
                 break;
             case 'mistyterrainweather':
-                battle_info['terrain'] = 'misty'
+                battle_info['terrain'] = 'Misty'
                 break;
             case 'electricterrainweather':
-                battle_info['terrain'] = 'electric'
+                battle_info['terrain'] = 'Electric'
                 break;
             case 'grassyterrainweather':
-                battle_info['terrain'] = 'grassy'
+                battle_info['terrain'] = 'Grassy'
                 break;
             case 'psychicterrainweather':
-                battle_info['terrain'] = 'psychic'
+                battle_info['terrain'] = 'Psychic'
                 break;
             case 'pseudoweather': // Trick room
                 battle_info['trick_room'] = true
@@ -348,77 +573,304 @@ function parse_weather_node(node){
 
 
 function parse_team_list(list_node){
+    // This function is only really important if we're in a situation where we're loading from an unknown state.
     var me_or_them = ""
     if ($(list_node).find("strong").text() == battle_info.username.opponent){
         me_or_them = "opponent"
     }else{
         me_or_them = "user"
     }
-    console.log("Parsing team list for " + me_or_them)
-    console.log($(list_node).find(".picon"))
+    //console.log("Parsing team list for " + me_or_them)
+    //console.log($(list_node).find(".picon"))
     var icons = $(list_node).find(".picon").each(function(){
         // console.log(this)
         var icon_text = this.title
         // First, parse HP or active status
         var last_parens = icon_text.slice(icon_text.lastIndexOf("(")+1,icon_text.lastIndexOf(")"))
-        var hp_reg = /[0-9]+%/
+        var hp_reg = /[0-9]+%(\|(tox|brn|par))?/
         var hp_float = -1
         var active_poke = false
+        var hp_split = []
         if(last_parens == "active"){
             //console.log(" Active pokemon. Trimming")
             icon_text = icon_text.slice(0, icon_text.lastIndexOf("(")-1)
+            last_parens = icon_text.slice(icon_text.lastIndexOf("(")+1,icon_text.lastIndexOf(")"))
             active_poke = true
+        }else if(["psn","par","brn", "slp", "tox"].includes(last_parens)){
+            hp_split = ["100%",last_parens]
         }else if(hp_reg.test(last_parens)){
             //console.log("Matches HP regex. doing current HP routine")
             //console.log(last_parens)
-            hp_float = parseFloat(last_parens.slice(0,-1))*0.01
+            hp_split = last_parens.split("|")
+            hp_float = parseFloat(hp_split[0].slice(0,-1))*0.01
+
             icon_text = icon_text.slice(0, icon_text.lastIndexOf("(")-1)
             last_parens = icon_text.slice(icon_text.lastIndexOf("(")+1,icon_text.lastIndexOf(")"))
         }
-        console.log("post trim")
-        console.log(icon_text)
-        if(active_poke){
-            if(pokemon_confirmed[me_or_them][last_parens]){
-                battle_info.active_pokemon[me_or_them] = last_parens
-            }else if (pokemon_confirmed[me_or_them][icon_text]){
-                battle_info.active_pokemon[me_or_them] = icon_text
-            }else{
-                console.error("Something is broken with parsing pokemon name for user list. it, lp")
-                console.log(icon_text)
-                console.log(last_parens)
+
+        var poke_text = ""
+        if(pokemon_confirmed[me_or_them][last_parens]){
+            poke_text = last_parens
+        }else if (pokemon_confirmed[me_or_them][icon_text]){
+            poke_text = icon_text
+        }else{
+            console.error("Something is broken with parsing pokemon name for user list. i_t, l_p")
+            console.log(icon_text)
+            console.log(last_parens)
+            console.log(me_or_them)
+        }
+        if(!active_poke){
+            console.log(pokemon_confirmed[me_or_them][poke_text])
+            console.log(me_or_them + " " + poke_text)
+            pokemon_confirmed[me_or_them][poke_text].boosts = {
+                at: 1,
+                df: 1,
+                sa: 1,
+                sd: 1,
+                sp: 1
             }
+            battle_info.active_pokemon[me_or_them] = poke_text
         }
 
         if(hp_float != -1){
-            if(pokemon_confirmed[me_or_them][last_parens]){
-                //console.log("Nickname case")
-                //console.log(last_parens)
-                if(pokemon_confirmed[me_or_them][last_parens].maxHP){
-                    pokemon_confirmed[me_or_them][last_parens].curHP = pokemon_confirmed[me_or_them][last_parens].maxHP*hp_float
-                }else{
-                    pokemon_model[me_or_them][last_parens].curHP = pokemon_model[me_or_them][last_parens].maxHP*hp_float
-                }
+            if(pokemon_confirmed[me_or_them][poke_text].maxHP){
+                pokemon_confirmed[me_or_them][poke_text].curHP = pokemon_confirmed[me_or_them][poke_text].maxHP*hp_float
             }else{
-                //console.log("No nickname case")
-                //console.log(icon_text)
-                if(pokemon_confirmed[me_or_them][icon_text].maxHP){
-                    pokemon_confirmed[me_or_them][icon_text].curHP = pokemon_confirmed[me_or_them][icon_text].maxHP*hp_float
-                }else{
-                    pokemon_model[me_or_them][icon_text].curHP = pokemon_model[me_or_them][icon_text].maxHP*hp_float
-                }
-
+                pokemon_model[me_or_them][poke_text].curHP = pokemon_model[me_or_them][poke_text].maxHP*hp_float
             }
-            console.log(hp_float +",pc,pm")
-            console.log(pokemon_confirmed)
-            console.log(pokemon_model)
         }
+
+        if(hp_split.length == 2){
+            switch (hp_split[1]){
+                case "tox":
+                    pokemon_confirmed[me_or_them][poke_text].status = "Badly Poisoned"
+                case "psn":
+                    pokemon_confirmed[me_or_them][poke_text].status = "Poisoned"
+                    break;
+                case "brn":
+                    pokemon_confirmed[me_or_them][poke_text].status = "Burned"
+                    break;
+                case "par":
+                    pokemon_confirmed[me_or_them][poke_text].status = "Paralyzed"
+                    break;
+                case "slp":
+                    pokemon_confirmed[me_or_them][poke_text].status = "Asleep"
+                    break;
+            }
+        }
+        //console.log(hp_float +",pc,pm")
+        //console.log(pokemon_confirmed)
+        //console.log(pokemon_model)
+
 
     })
 
 }
 
 
-var battle_node = null
+function parse_statbar_node(statbar_node){
+    //console.log("Parsing statbar")
+    //console.log(statbar_node)
+    var nickname = ""
+    var nick_node = $(statbar_node).children("strong")
+    var gender = ""
+
+    if($(nick_node).find("img").length){
+        gender = $(nick_node).find("img")[0].alt
+        nickname = nick_node.text().slice(0,-1)
+    }else{
+        nickname = nick_node.text()
+    }
+    var me_or_them = $(statbar_node).hasClass("rstatbar") ? "user" : "opponent"
+    var poke_name = battle_info["nicknames"][me_or_them][nickname]
+    //console.log(nickname +" "+ me_or_them)
+    //console.log(statbar_node)
+    if(!pokemon_confirmed[me_or_them][poke_name]){
+        console.log("Read before the client window was set correctly. Returning early.")
+        return
+    }
+    pokemon_confirmed[me_or_them][poke_name].gender = gender == "M" ? "male" : gender == "F" ? "female" : "genderless"
+
+    // Active pokemon health
+    var hp_percent = parseFloat($(statbar_node).find("hptext").text().slice(0,-1))
+    if(pokemon_confirmed[me_or_them][poke_name].maxHP){
+        pokemon_confirmed[me_or_them][poke_name].curHP = hp_percent*0.01*pokemon_confirmed[me_or_them][poke_name].maxHP
+    }else{
+        pokemon_model[me_or_them][poke_name].curHP = hp_percent*0.01*pokemon_model[me_or_them][poke_name].maxHP
+    }
+
+    // Status and boosts
+    var statused = false
+    var boosts = {
+         at: 1,
+         df: 1,
+         sa: 1,
+         sd: 1,
+         sp: 1
+    }
+    $(statbar_node).find(".status").children().each(function(){
+        // Good / Bad is probably a boost
+        // TODO: Taunt / other possible statuses (protean, torment, etc.)
+        var boost_reg = /[0-9]?.?[0-9]?[0-9]× (Atk|Spe|SpD|SpA|Def)/
+        if(boost_reg.test($(this).text())){
+            var abbrev_map = {"Atk":"at","Def":"df","SpA":"sa","SpD":"sd","Spe":"sp"}
+            var boost_val = parseFloat($(this).text().slice(0,$(this).text().indexOf("×")))
+            var boost_stat = $(this).text().slice($(this).text().indexOf("×")+2)
+            boosts[abbrev_map[boost_stat]] = boost_val
+        }
+        switch($(this).text()){
+            case "BRN":
+                pokemon_confirmed[me_or_them][poke_name].status = "Burned"
+                statused = true
+            case "PAR":
+                pokemon_confirmed[me_or_them][poke_name].status = "Paralyzed"
+                statused = true
+            case "PSN":
+                pokemon_confirmed[me_or_them][poke_name].status = "Poisoned"
+                statused = true
+                break;
+            case "TOX":
+                pokemon_confirmed[me_or_them][poke_name].status = "Badly Poisoned"
+                statused = true
+                break;
+        }
+
+    })
+    pokemon_confirmed[me_or_them][poke_name].boosts = boosts
+    if(!statused){
+        pokemon_confirmed[me_or_them][poke_name].status = "Healthy"
+    }
+    console.log(pokemon_confirmed)
+    console.log(pokemon_model)
+}
+
+function fill_model(){
+    // All of the keys I'll need for any pokemon I want to do damage calcs on.
+    // If it isn't in pokemon_confirmed, we need to guess it here.
+    var needed_values = {
+        rawStats: null,
+        evs: null,
+        maxHP: null,
+        curHP: null,
+        level: 100,
+        HPEVs: null,
+        stats: {},
+        nature: null,
+        ability: null,
+        item: null,
+        moves: [null,null,null,null],
+        gender: "genderless" // Only important for rivalry / (eventually) attract. Might make sense to randomize it in the future
+    }
+    for(var pokemon in pokemon_confirmed.opponent){
+        for(var key in needed_values){
+            if(pokemon_confirmed.opponent[pokemon][key]){
+                if(!key == "moves" || pokemon_confirmed.opponent[pokemon][key].length == 4){
+                    console.log(pokemon + " has a confirmed "+key+". Skipping")
+                    continue
+                }
+            }
+            if(key == "rawStats"){
+                // Do calcs for EVs, rawStats, maxHP, curHP, HPEVs, nature
+                // Damage analysis should delete keys from our usage stats as current data is invalidated, so we should
+                // always take the "most used" for each item.
+                var most_used_spread = max_key(usage_stats[pokemon]["Spreads"])
+                var split_spread = most_used_spread.split(":")
+                pokemon_model.opponent[pokemon].nature = split_spread[0]
+                split_spread = split_spread[1].split("/")
+                var abbrevs = ["at","df","sa","sd","sp"]
+                for(var i in abbrevs){
+                    pokemon_model.opponent[pokemon].evs[abbrevs[i]] = split_spread[i+1]
+                    var base = POKEDEX_SM[pokemon]['bs'][abbrevs[i]]
+                    var level = pokemon_confirmed.opponent[pokemon].level
+                    var natureMods = NATURES[pokemon_model.opponent[pokemon].nature]
+                    var nature = natureMods[0] === statName ? 1.1 : natureMods[1] === statName ? 0.9 : 1;
+                    var total = Math.floor((Math.floor((base * 2 + 31 + Math.floor(evs / 4)) * level / 100) + 5) * nature);
+                    pokemon_model.opponent[pokemon].rawStats[abbrevs[i]] = total
+                }
+                if(!pokemon_confirmed.opponent[pokemon]["maxHP"]){
+                    var prev_hp = false
+                    if(pokemon_model.opponent[pokemon].curHP){
+                        prev_hp = pokemon_model.opponent[pokemon].curHP/pokemon_model.opponent[pokemon].maxHP
+                    }else if(pokemon_confirmed.opponent[pokemon].curHP){
+                        prev_hp = pokemon_confirmed.opponent[pokemon].curHP/pokemon_confirmed.opponent[pokemon].maxHP
+                    } // TODO: Fainted case leads to strange things here (because 0 hp)
+
+                    pokemon_model.opponent[pokemon].HPEVs = split_spread[0]
+                    var base_hp = POKEDEX_SM[pokemon]['bs']['hp']
+                    if (base_hp === 1){
+                        pokemon_confirmed.opponent[pokemon].maxHP = 1;
+                        pokemon_confirmed.opponent[pokemon].curHP = 1;
+                    }else{
+                        pokemon_model.opponent[pokemon].maxHP =  Math.floor((base_hp * 2 + 31 + Math.floor(evs / 4)) * level / 100) + level + 10;
+                        pokemon_model.opponent[pokemon].curHP = pokemon_model.opponent[pokemon].maxHP*prev_hp
+                    }
+                }
+            }
+            else if(key == "ability"){
+                var most_used_abil = usage_key_links[max_key(usage_stats[pokemon]["Abilities"])]
+                if(max_key(usage_stats[pokemon]["Abilities"]).length == 1){
+                    pokemon_confirmed.opponent[pokemon].ability = most_used_abil
+                }else{
+                    pokemon_model.opponent[pokemon].ability = most_used_abil
+                }
+            }else if(key == "item"){
+                pokemon_model.opponent[pokemon].item = usage_key_links[max_key(usage_stats[pokemon]["Items"])]
+            }else if(key == "moves"){
+                var move_array = []
+                if(pokemon_confirmed.opponent[pokemon].moves){
+                    move_array = pokemon_confirmed.opponent[pokemon].moves
+                }
+                var move_list = usage_stats[pokemon]["Moves"]
+                if(!usage_stats[pokemon]["moves_sorted"]){
+                    //TODO: When removing moves from the usage stats, remember to remove them from here too
+                    usage_stats[pokemon]["moves_sorted"] = Object.keys(move_list).sort(function(a,b){return move_list[a]-move_list[b]}).reverse()
+                }
+                var moves_needed = 4 - move_list.length
+                for(var i in usage_stats[pokemon]["moves_sorted"]){
+                    if(!moves_needed){
+                        break;
+                    }
+                    var move_name = usage_key_links[usage_stats[pokemon]["moves_sorted"][i]]
+                    if(move_array.indexOf(MOVES_SM[move_name]) == -1){
+                        // Objects are passed as references, so these should be literal matches, not just "looks the same" matches
+                        move_array.push(MOVES_SM[move_name])
+                        moves_needed -= 1
+                    }
+                }
+                pokemon_model.opponent[pokemon].moves = move_array
+
+
+            }
+            else{
+                pokemon_confirmed.opponent[pokemon][key] = needed_values[key]
+            }
+        }
+    }
+}
+
+function containsObject(obj, list) {
+    var i;
+    for (i = 0; i < list.length; i++) {
+        if (list[i] === obj) {
+            return true;
+        }
+    }
+    return false;
+}
+
+function max_key(dict){
+    var count = -Infinity
+    var max_key = null
+    for(var key in dict){
+        if(dict[key] > count){
+            max_key = spread
+            count = dict[key]
+        }
+    }
+    return key
+}
+
+
 function bs_callback(mutationList, observer) {
     //console.log("new mutation")
     //console.log(mutationList)
@@ -456,7 +908,6 @@ function bs_callback(mutationList, observer) {
         }
         // TODO: cross off parsed info for opponent as this is parsed
         // TODO: get the pokemon info for the team that will be used. (find HO team because it's easier)
-        // TODO: check if mutation in battle_node, if so, parse it accordingly
 
         // Important info seen
         /*
@@ -503,11 +954,27 @@ $(document.body).ready(function(){
     var battle_start_obs = new MutationObserver(bs_callback)
 
     console.log(battle_info)
+    /*for(var key in ITEMS_SM){
+        var lower = ITEMS_SM[key].replace(/[^A-Z0-9]/ig, "").toLowerCase()
+        usage_key_links[lower] = ITEMS_SM[key]
+    }
+    for(var key in MOVES_SM){
+        var lower = key.replace(/[^A-Z0-9]/ig, "").toLowerCase()
+        usage_key_links[lower] = key
+    }
+    for(var key in ABILITIES_SM){
+        var lower = ABILITIES_SM[key].replace(/[^A-Z0-9]/ig, "").toLowerCase()
+         usage_key_links[lower] = ABILITIES_SM[key]
+    }*/
+    console.log(usage_key_links)
+    downloadObjectAsJson(usage_key_links, "lower_to_upper.json")
+
 
     battle_start_obs.observe(document.body,observerOptions)
     $("div", $("body")).each(function(){
         // console.log(this)
         if (this.id && this.id.includes("room-battle-gen7ou") && this.tagName == "DIV"){
+            room = this
             console.log(this)
         }
     })

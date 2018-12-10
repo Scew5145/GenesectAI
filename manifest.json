@@ -11,6 +11,7 @@
               "damagecalc/move_data.js",
               "damagecalc/pokedex.js",
               "damagecalc/ability_data.js",
+              "damagecalc/item_data.js",
               "background.js"
             ]
     }],
