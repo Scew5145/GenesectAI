@@ -966,8 +966,7 @@ $(document.body).ready(function(){
         var lower = ABILITIES_SM[key].replace(/[^A-Z0-9]/ig, "").toLowerCase()
          usage_key_links[lower] = ABILITIES_SM[key]
     }*/
-    console.log(usage_key_links)
-    downloadObjectAsJson(usage_key_links, "lower_to_upper.json")
+    //console.log(usage_key_links)
 
 
     battle_start_obs.observe(document.body,observerOptions)
