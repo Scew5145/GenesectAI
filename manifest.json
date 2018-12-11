@@ -12,6 +12,9 @@
               "damagecalc/pokedex.js",
               "damagecalc/ability_data.js",
               "damagecalc/item_data.js",
+              "damagecalc/nature_data.js",
+              "damagecalc/damage.js",
+              "predict_turn.js",
               "background.js"
             ]
     }],

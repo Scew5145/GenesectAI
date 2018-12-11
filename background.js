@@ -317,16 +317,26 @@ var usage_key_links = {}
 function import_relevant_usage_stats(usage_json){
     // Function for doing the initial json pull and storing it to usage_stats.
     // This should only ever be called once (partially because the usage json is FAT)
+    var need_stats = false
+    for (var key in pokemon_confirmed.opponent){
+        if(!(key in usage_stats)){
+            need_stats = true
+        }
+    }
+    if(!need_stats){
+        return
+    }
     const url = chrome.runtime.getURL('data/lower_to_upper.json');
     // console.log(usage_json)
-    for (var key in pokemon_confirmed.opponent){
-        usage_stats[key] = usage_json.data[key]
-    }
-    console.log(usage_stats)
     fetch(url).then((response) => response.json()).then((json) => {
         usage_key_links = json
         console.log(usage_key_links)
     });
+    for (var key in pokemon_confirmed.opponent){
+        usage_stats[key] = usage_json.data[key]
+    }
+    console.log(usage_stats)
+
 }
 
 
@@ -425,17 +435,14 @@ function get_turn_information(turn_end_header){
                     output_poke_confirmed['type2'] = pokedex_entry['t2']
                     output_poke_confirmed['weight'] = pokedex_entry['w']
                     output_poke_confirmed['status'] = "Healthy"
+                    output_poke_confirmed['level'] = 100
                     pokemon_confirmed.opponent[enemy_poke] = output_poke_confirmed
                     pokemon_model.opponent[enemy_poke] = {}
                     // Time to make some guesses
                     var output_poke_model = {}
-
                 })
-                const url = chrome.runtime.getURL('data/gen7ou-1500.json');
-                fetch(url)
-                    .then((response) => response.json())
-                    .then((json) => import_relevant_usage_stats(json));
-                console.log(pokemon_confirmed)
+
+                //console.log(pokemon_confirmed)
                 console.assert(team_split.length == 6)
 
             }else{
@@ -444,6 +451,7 @@ function get_turn_information(turn_end_header){
                 // console.log(temp_username)
                 // console.log(battle_info.username.user)
             }
+
         }
         else if (info_string.startsWith("The opposing")){
             // Case: move from opponent. Add to confirmed movepool & do damage hypothesis stuff
@@ -478,21 +486,26 @@ function get_turn_information(turn_end_header){
                 parsed_nick = parsed_nick.replace('(' +poke_name+ ')', '').slice(0,-3)
             }
             battle_info.nicknames.opponent[parsed_nick] = poke_name
-            console.log("Did nickname parse")
-            console.log(battle_info.username.opponent)
-            console.log(battle_info)
+            //console.log("Did nickname parse")
+            //console.log(battle_info.username.opponent)
+            //console.log(battle_info)
         }
         else {
-            console.log($(this).text())
+            //console.log($(this).text())
         }
     })
-    console.log(pokemon_confirmed)
+    //console.log(pokemon_confirmed)
     // Once we're done parsing the battle history, we can guarantee we have a nickname for each pokemon shown, so
     // active field won't break (probably)
-    get_active_field()
-
-    // Finished the "known" info parsing. Start making guesses
-    fill_model()
+    const url = chrome.runtime.getURL('data/gen7ou-1500.json');
+    fetch(url)
+    .then((response) => response.json())
+    .then((json) => {
+        import_relevant_usage_stats(json)
+        // Finished the "known" info parsing. Start making guesses
+        get_active_field()
+        fill_model()
+    });
     return
     /*
 
@@ -513,7 +526,7 @@ function get_active_field(){
     if (!room) {
         return console.error("No active battle room. Can't do active field parse.")
     }
-    console.log("inner battle parsing")
+    //console.log("inner battle parsing")
     var innerbattle = $(room).find(".innerbattle")
     innerbattle.children().each(function(){
         //console.log('ibp')
@@ -620,8 +633,8 @@ function parse_team_list(list_node){
             console.log(me_or_them)
         }
         if(!active_poke){
-            console.log(pokemon_confirmed[me_or_them][poke_text])
-            console.log(me_or_them + " " + poke_text)
+            //console.log(pokemon_confirmed[me_or_them][poke_text])
+            //console.log(me_or_them + " " + poke_text)
             pokemon_confirmed[me_or_them][poke_text].boosts = {
                 at: 1,
                 df: 1,
@@ -686,7 +699,7 @@ function parse_statbar_node(statbar_node){
     //console.log(nickname +" "+ me_or_them)
     //console.log(statbar_node)
     if(!pokemon_confirmed[me_or_them][poke_name]){
-        console.log("Read before the client window was set correctly. Returning early.")
+        //console.log("Read before the client window was set correctly. Returning early.")
         return
     }
     pokemon_confirmed[me_or_them][poke_name].gender = gender == "M" ? "male" : gender == "F" ? "female" : "genderless"
@@ -740,8 +753,8 @@ function parse_statbar_node(statbar_node){
     if(!statused){
         pokemon_confirmed[me_or_them][poke_name].status = "Healthy"
     }
-    console.log(pokemon_confirmed)
-    console.log(pokemon_model)
+    //console.log(pokemon_confirmed)
+    //console.log(pokemon_model)
 }
 
 function fill_model(){
@@ -758,12 +771,18 @@ function fill_model(){
         nature: null,
         ability: null,
         item: null,
-        moves: [null,null,null,null],
+        moves: [],
         gender: "genderless" // Only important for rivalry / (eventually) attract. Might make sense to randomize it in the future
     }
     for(var pokemon in pokemon_confirmed.opponent){
+        console.log("Doing model for "+pokemon)
+        if(!(pokemon in usage_stats)){
+            console.log("Accessed usage_stats before loaded. Returning early.")
+            return
+        }
+
         for(var key in needed_values){
-            if(pokemon_confirmed.opponent[pokemon][key]){
+            if(key in pokemon_confirmed.opponent[pokemon]){
                 if(!key == "moves" || pokemon_confirmed.opponent[pokemon][key].length == 4){
                     console.log(pokemon + " has a confirmed "+key+". Skipping")
                     continue
@@ -777,14 +796,21 @@ function fill_model(){
                 var split_spread = most_used_spread.split(":")
                 pokemon_model.opponent[pokemon].nature = split_spread[0]
                 split_spread = split_spread[1].split("/")
+                console.log(split_spread)
+                console.log("split spread")
                 var abbrevs = ["at","df","sa","sd","sp"]
+                pokemon_model.opponent[pokemon].evs = {}
+                pokemon_model.opponent[pokemon].rawStats = {}
+                var level = pokemon_confirmed.opponent[pokemon].level
                 for(var i in abbrevs){
-                    pokemon_model.opponent[pokemon].evs[abbrevs[i]] = split_spread[i+1]
+                    //console.log("ev index")
+                    i = parseInt(i)
+                    //console.log(i+1)
+                    pokemon_model.opponent[pokemon].evs[abbrevs[i]] = parseInt(split_spread[i+1])
                     var base = POKEDEX_SM[pokemon]['bs'][abbrevs[i]]
-                    var level = pokemon_confirmed.opponent[pokemon].level
                     var natureMods = NATURES[pokemon_model.opponent[pokemon].nature]
-                    var nature = natureMods[0] === statName ? 1.1 : natureMods[1] === statName ? 0.9 : 1;
-                    var total = Math.floor((Math.floor((base * 2 + 31 + Math.floor(evs / 4)) * level / 100) + 5) * nature);
+                    var nature = natureMods[0] === abbrevs[i] ? 1.1 : natureMods[1] === abbrevs[i] ? 0.9 : 1;
+                    var total = Math.floor((Math.floor((base * 2 + 31 + Math.floor(parseInt(split_spread[i+1]) / 4)) * level / 100) + 5) * nature);
                     pokemon_model.opponent[pokemon].rawStats[abbrevs[i]] = total
                 }
                 if(!pokemon_confirmed.opponent[pokemon]["maxHP"]){
@@ -795,20 +821,24 @@ function fill_model(){
                         prev_hp = pokemon_confirmed.opponent[pokemon].curHP/pokemon_confirmed.opponent[pokemon].maxHP
                     } // TODO: Fainted case leads to strange things here (because 0 hp)
 
-                    pokemon_model.opponent[pokemon].HPEVs = split_spread[0]
+                    pokemon_model.opponent[pokemon].HPEVs = parseInt(split_spread[0])
                     var base_hp = POKEDEX_SM[pokemon]['bs']['hp']
                     if (base_hp === 1){
                         pokemon_confirmed.opponent[pokemon].maxHP = 1;
                         pokemon_confirmed.opponent[pokemon].curHP = 1;
                     }else{
-                        pokemon_model.opponent[pokemon].maxHP =  Math.floor((base_hp * 2 + 31 + Math.floor(evs / 4)) * level / 100) + level + 10;
+                        pokemon_model.opponent[pokemon].maxHP =  Math.floor((base_hp * 2 + 31 + Math.floor(parseInt(split_spread[0]) / 4)) * level / 100) + level + 10;
                         pokemon_model.opponent[pokemon].curHP = pokemon_model.opponent[pokemon].maxHP*prev_hp
                     }
                 }
             }
             else if(key == "ability"){
-                var most_used_abil = usage_key_links[max_key(usage_stats[pokemon]["Abilities"])]
-                if(max_key(usage_stats[pokemon]["Abilities"]).length == 1){
+                var most_used_lower = max_key(usage_stats[pokemon]["Abilities"])
+                var most_used_abil = usage_key_links[most_used_lower]
+                //console.log("Ability")
+                //console.log(most_used_lower)
+                //console.log(usage_key_links)
+                if(usage_stats[pokemon]["Abilities"].length == 1){
                     pokemon_confirmed.opponent[pokemon].ability = most_used_abil
                 }else{
                     pokemon_model.opponent[pokemon].ability = most_used_abil
@@ -821,20 +851,26 @@ function fill_model(){
                     move_array = pokemon_confirmed.opponent[pokemon].moves
                 }
                 var move_list = usage_stats[pokemon]["Moves"]
-                if(!usage_stats[pokemon]["moves_sorted"]){
+                if(!("moves_sorted" in usage_stats[pokemon])){
                     //TODO: When removing moves from the usage stats, remember to remove them from here too
                     usage_stats[pokemon]["moves_sorted"] = Object.keys(move_list).sort(function(a,b){return move_list[a]-move_list[b]}).reverse()
                 }
-                var moves_needed = 4 - move_list.length
+                //console.log(usage_stats[pokemon]["moves_sorted"])
+                var moves_needed = 4 - move_array.length
                 for(var i in usage_stats[pokemon]["moves_sorted"]){
-                    if(!moves_needed){
+                    if(moves_needed <= 0){
+                        //console.log(move_array)
                         break;
                     }
                     var move_name = usage_key_links[usage_stats[pokemon]["moves_sorted"][i]]
+                    //console.log(usage_stats[pokemon]["moves_sorted"][i])
+                    //console.log(move_name)
                     if(move_array.indexOf(MOVES_SM[move_name]) == -1){
                         // Objects are passed as references, so these should be literal matches, not just "looks the same" matches
                         move_array.push(MOVES_SM[move_name])
                         moves_needed -= 1
+                    }else{
+                        //console.log("Move "+move_name+" is already in the array")
                     }
                 }
                 pokemon_model.opponent[pokemon].moves = move_array
@@ -846,6 +882,10 @@ function fill_model(){
             }
         }
     }
+
+    console.log("Finished filling model.")
+    console.log(pokemon_confirmed)
+    console.log(pokemon_model)
 }
 
 function containsObject(obj, list) {
@@ -863,11 +903,12 @@ function max_key(dict){
     var max_key = null
     for(var key in dict){
         if(dict[key] > count){
-            max_key = spread
+            max_key = key
             count = dict[key]
         }
     }
-    return key
+    //console.log(max_key+"is max")
+    return max_key
 }
 
 
@@ -910,41 +951,6 @@ function bs_callback(mutationList, observer) {
         // TODO: get the pokemon info for the team that will be used. (find HO team because it's easier)
 
         // Important info seen
-        /*
-            TODO: Parse enemy team, assign to all_pokemon dict as pokemon_name: { pokemon class }
-            div.chat.battle-history is always the team lists without nicknames in the format:
-            <div class="chat battle-history">
-                <strong>{player}'s team:</strong>
-                <em style="color:#445566;display:block;">p1 / p2 / p3 / p4 / p5 / p6</em>
-            </div>
-            where p{number} is one of the pokemon.
-
-            TODO: Parse statbar.rstatbar for both users
-            Info and where it should go
-            hp% --> pokemon
-            <div class="statbar rstatbar" style="display: block; left: 130px; top: 120px; opacity: 1;">
-                <strong>Tapu Bulu</strong>
-                <div class="hpbar">
-                    <div class="hptext">88%</div>
-                    <div class="hptextborder"></div>
-                    <div class="prevhp" style="width: 133px;">
-                        <div class="hp" style="width: 132px; border-right-width: 1px;"></div>
-                    </div>
-                    <div class="status">
-                        <span class="psn">PSN</span>
-                        <span class="good">3×&nbsp;Def</span>
-                        <span class="good">2.5×&nbsp;SpA</span>
-                        <span class="good">2.5×&nbsp;SpD</span>
-                        <span class="bad">0.67×&nbsp;Atk</span>
-                        <span class="bad">0.75×&nbsp;Evasion</span>
-                    </div>
-                </div>
-            </div>
-
-
-
-            TODO: Parse Entry Hazards - can ignore this for later
-        */
 
     });
 }
