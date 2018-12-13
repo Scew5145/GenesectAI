@@ -1,7 +1,10 @@
+// License information can be found in the repository's LICENSE file.
 
 'use strict';
 
 // The 'room' node for the battle. should be  a div matching the id=room-battle-gen7ou-{id}
+var typeChart = TYPE_CHART_XY
+var gen = 7
 var room = null
 // Observer stuff
 var observerOptions = {
@@ -120,6 +123,12 @@ var pokemon_confirmed = {
                 sd: 1,
                 sp: 1
             },
+            moves:[
+                MOVES_SM["Earthquake"],
+                MOVES_SM["Knock Off"],
+                MOVES_SM["Hidden Power Fire"],
+                MOVES_SM["Defog"]
+            ],
             nature: "Jolly",
             HPEVs: 88,
             ability: "Intimidate",
@@ -155,6 +164,12 @@ var pokemon_confirmed = {
                 sd: 1,
                 sp: 1
             },
+            moves:[
+                MOVES_SM["Psychic"],
+                MOVES_SM["Acid Armor"],
+                MOVES_SM["Calm Mind"],
+                MOVES_SM["Thunder Wave"]
+            ],
             nature: "Bold",
             HPEVs: 240,
             item: "Leftovers",
@@ -190,9 +205,16 @@ var pokemon_confirmed = {
                 sd: 1,
                 sp: 1
             },
+            moves:[
+                MOVES_SM["Swords Dance"],
+                MOVES_SM["Horn Leech"],
+                MOVES_SM["Superpower"],
+                MOVES_SM["Sunny Day"]
+            ],
             nature: "Careful",
             HPEVs: 216,
             item: "Leftovers",
+            ability: "Grassy Surge",
             maxHP: 335,
             curHP: 335,
             level: 100,
@@ -224,6 +246,12 @@ var pokemon_confirmed = {
                 sd: 1,
                 sp: 1
             },
+            moves:[
+                MOVES_SM["Recover"],
+                MOVES_SM["Toxic Spikes"],
+                MOVES_SM["Toxic"],
+                MOVES_SM["Scald"]
+            ],
             nature: "Bold",
             HPEVs: 248,
             ability: "Regenerator",
@@ -259,6 +287,12 @@ var pokemon_confirmed = {
                 sd: 1,
                 sp: 1
             },
+            moves:[
+                MOVES_SM["Stealth Rock"],
+                MOVES_SM["Stone Edge"],
+                MOVES_SM["Pursuit"],
+                MOVES_SM["Fire Punch"]
+            ],
             nature: "Adamant",
             HPEVs: 104,
             item: "Tyranitarite",
@@ -281,13 +315,25 @@ var pokemon_model = {
     opponent : {}
 } // Same as above, but is only values that don't exist but need to. "Unconfirmed"
 var battle_info = {
+    // Two item arrays are always user, opponent
     turn: 0,
-    weather: null,
-    terrain: null,
+    format: "Singles",
+    weather: "",
+    terrain: "",
     trick_room: false,
-    stealth_rock: false, // Might not use entry hazards until first pass finishes
-    spikes: 0,
-    toxic_spikes: 0,
+    isSR: [false,false], // Might not use entry hazards until first pass finishes
+    isGravity: false,
+    isReflect: [false,false],
+    isLightScreen: [false,false],
+    isProtected:[false,false],
+    isSeeded: [false,false],
+    isForesight: [false,false],
+    isHelpingHand: [false,false],
+    isFriendGuard: [false,false],
+    isAuroraVeil: [false, false],
+    spikes: [0,0],
+    toxic_spikes: [0,0],
+
     active_pokemon: {
         user: null, // pokedex name so that you can go pokemon_confirmed.opponent[battle_info.active_pokemon.opponent]
         opponent: null
@@ -310,6 +356,13 @@ var battle_info = {
         opponent: null
     }
 }
+battle_info.getWeather= function() {
+    return this.weather;
+};
+battle_info.getSide = function (i) {
+    return new Side(this.format, this.terrain, this.weather, this.isGravity, this.isSR[i], this.spikes[i], this.isReflect[i], this.isLightScreen[i], this.isProtected[i], this.isSeeded[1 - i], this.isSeeded[i], this.isForesight[i], this.isHelpingHand[i], this.isFriendGuard[i], this.isAuroraVeil[i]);
+};
+
 var usage_stats = {} // Format is  pokemon: {stats}
 var usage_key_links = {}
 
@@ -330,7 +383,9 @@ function import_relevant_usage_stats(usage_json){
     // console.log(usage_json)
     fetch(url).then((response) => response.json()).then((json) => {
         usage_key_links = json
-        console.log(usage_key_links)
+        get_active_field()
+        fill_model()
+        //console.log(usage_key_links)
     });
     for (var key in pokemon_confirmed.opponent){
         usage_stats[key] = usage_json.data[key]
@@ -404,10 +459,10 @@ function get_turn_information(turn_end_header){
     // Go to the top of the turn, iterate through actions
     var history = $(turn_end_header).prevUntil("h2.battle-history",".battle-history").not(".spacer")
     var rev_history = $(history.get().reverse())
-    console.log("History before node:")
-    console.log(turn_end_header)
-    console.log(rev_history)
-    console.log(history)
+    //console.log("History before node:")
+    //console.log(turn_end_header)
+    //console.log(rev_history)
+    //console.log(history)
     // TODO: make sure to grab nicknames / active data in general
 
     $(rev_history).each(function(){
@@ -460,10 +515,32 @@ function get_turn_information(turn_end_header){
             //      For example, intimidate hitting the opponent is enough to trigger this state right now
             // TODO: This runs into errors if nickname contains " used ". fix eventually when bored
             var move = {}
+            if(info_string.indexOf(" used ") == -1){
+                console.log("Skipping opposing info case: "+info_string)
+                return
+            }
             var nickname = info_string.substring(13, info_string.indexOf(" used "))
 
             var move_name = $(this).find("strong").text()
             move = MOVES_SM[move_name]
+            if(!move){
+                console.error("Move " + move_name +"not in MOVES_SM")
+                console.error(info_string)
+            }
+            var enemy_poke = pokemon_confirmed.opponent[battle_info.nicknames.opponent[nickname]]
+
+            if(enemy_poke){
+                if (move.isZ){
+                    console.log("Z move case. Need to assign item")
+                }
+                else if(!enemy_poke.moves){
+                    enemy_poke.moves = []
+                    enemy_poke.moves.push(move)
+                }
+                else if(enemy_poke.moves.indexOf(move) == -1){
+                    enemy_poke.moves.push(move)
+                }
+            }
 
             var subtext = ''
             if($(this).next().text() == "A critical hit!"){
@@ -603,12 +680,17 @@ function parse_team_list(list_node){
         var hp_reg = /[0-9]+%(\|(tox|brn|par))?/
         var hp_float = -1
         var active_poke = false
+        var fainted = false
         var hp_split = []
         if(last_parens == "active"){
             //console.log(" Active pokemon. Trimming")
             icon_text = icon_text.slice(0, icon_text.lastIndexOf("(")-1)
             last_parens = icon_text.slice(icon_text.lastIndexOf("(")+1,icon_text.lastIndexOf(")"))
             active_poke = true
+        }else if(last_parens == "fainted"){
+            icon_text = icon_text.slice(0, icon_text.lastIndexOf("(")-1)
+            last_parens = icon_text.slice(icon_text.lastIndexOf("(")+1,icon_text.lastIndexOf(")"))
+            fainted = true
         }else if(["psn","par","brn", "slp", "tox"].includes(last_parens)){
             hp_split = ["100%",last_parens]
         }else if(hp_reg.test(last_parens)){
@@ -642,10 +724,19 @@ function parse_team_list(list_node){
                 sd: 1,
                 sp: 1
             }
+        }else{
+            console.log("Active pokemon: "+poke_text+" "+me_or_them)
             battle_info.active_pokemon[me_or_them] = poke_text
         }
 
+        if(fainted){
+            pokemon_confirmed[me_or_them][poke_text].status = "Fainted"
+            pokemon_confirmed[me_or_them][poke_text].curHP = 0
+        }
+
         if(hp_float != -1){
+            console.log("HP FLOAT:")
+            console.log(hp_float)
             if(pokemon_confirmed[me_or_them][poke_text].maxHP){
                 pokemon_confirmed[me_or_them][poke_text].curHP = pokemon_confirmed[me_or_them][poke_text].maxHP*hp_float
             }else{
@@ -695,7 +786,13 @@ function parse_statbar_node(statbar_node){
         nickname = nick_node.text()
     }
     var me_or_them = $(statbar_node).hasClass("rstatbar") ? "user" : "opponent"
-    var poke_name = battle_info["nicknames"][me_or_them][nickname]
+    var poke_name = ""
+    //if(battle_info["nicknames"]){
+    poke_name = battle_info["nicknames"][me_or_them][nickname]
+    /*}else{
+        console.log("Haven't loaded nickname " + nickname + "for the " + me_or_them + "yet. Returning.")
+        return
+    }*/
     //console.log(nickname +" "+ me_or_them)
     //console.log(statbar_node)
     if(!pokemon_confirmed[me_or_them][poke_name]){
@@ -705,7 +802,10 @@ function parse_statbar_node(statbar_node){
     pokemon_confirmed[me_or_them][poke_name].gender = gender == "M" ? "male" : gender == "F" ? "female" : "genderless"
 
     // Active pokemon health
-    var hp_percent = parseFloat($(statbar_node).find("hptext").text().slice(0,-1))
+    console.log()
+    var hp_percent = parseFloat($(statbar_node).find(".hptext").text().slice(0,-1))
+    console.log("HP percent:")
+    console.log(hp_percent)
     if(pokemon_confirmed[me_or_them][poke_name].maxHP){
         pokemon_confirmed[me_or_them][poke_name].curHP = hp_percent*0.01*pokemon_confirmed[me_or_them][poke_name].maxHP
     }else{
@@ -782,9 +882,11 @@ function fill_model(){
         }
 
         for(var key in needed_values){
-            if(key in pokemon_confirmed.opponent[pokemon]){
-                if(!key == "moves" || pokemon_confirmed.opponent[pokemon][key].length == 4){
-                    console.log(pokemon + " has a confirmed "+key+". Skipping")
+            if(pokemon_confirmed.opponent[pokemon].hasOwnProperty(key)){
+                if(!(key == "moves")){
+                    //console.log(pokemon + " has a confirmed "+key+". Skipping")
+                    continue
+                }else if(!(pokemon_confirmed.opponent[pokemon]["moves"].hasOwnProperty("length")) || pokemon_confirmed.opponent[pokemon]["moves"].length < 4){
                     continue
                 }
             }
@@ -796,8 +898,8 @@ function fill_model(){
                 var split_spread = most_used_spread.split(":")
                 pokemon_model.opponent[pokemon].nature = split_spread[0]
                 split_spread = split_spread[1].split("/")
-                console.log(split_spread)
-                console.log("split spread")
+                //console.log(split_spread)
+                //console.log("split spread")
                 var abbrevs = ["at","df","sa","sd","sp"]
                 pokemon_model.opponent[pokemon].evs = {}
                 pokemon_model.opponent[pokemon].rawStats = {}
@@ -828,13 +930,25 @@ function fill_model(){
                         pokemon_confirmed.opponent[pokemon].curHP = 1;
                     }else{
                         pokemon_model.opponent[pokemon].maxHP =  Math.floor((base_hp * 2 + 31 + Math.floor(parseInt(split_spread[0]) / 4)) * level / 100) + level + 10;
-                        pokemon_model.opponent[pokemon].curHP = pokemon_model.opponent[pokemon].maxHP*prev_hp
+                        if(!(prev_hp === false)){
+                            pokemon_model.opponent[pokemon].curHP = pokemon_model.opponent[pokemon].maxHP*prev_hp
+                        }else{
+                            //console.log("model prev_hp is false")
+
+                            pokemon_model.opponent[pokemon].curHP = pokemon_model.opponent[pokemon].maxHP
+                            console.log(pokemon_model.opponent[pokemon])
+                        }
+
                     }
                 }
             }
             else if(key == "ability"){
                 var most_used_lower = max_key(usage_stats[pokemon]["Abilities"])
                 var most_used_abil = usage_key_links[most_used_lower]
+                if(!most_used_abil){
+                    console.log("Left before ability was loaded because of bad usage data.")
+                    return
+                }
                 //console.log("Ability")
                 //console.log(most_used_lower)
                 //console.log(usage_key_links)
@@ -843,12 +957,19 @@ function fill_model(){
                 }else{
                     pokemon_model.opponent[pokemon].ability = most_used_abil
                 }
-            }else if(key == "item"){
-                pokemon_model.opponent[pokemon].item = usage_key_links[max_key(usage_stats[pokemon]["Items"])]
+            }
+            else if(key == "item"){
+                var most_used_item = usage_key_links[max_key(usage_stats[pokemon]["Items"])]
+                if(!most_used_item){
+                    return
+                }
+                pokemon_model.opponent[pokemon].item = most_used_item
             }else if(key == "moves"){
-                var move_array = []
+                // Commenting this out as this function only needs to fill non-move things right now
+                /*var move_array = []
                 if(pokemon_confirmed.opponent[pokemon].moves){
-                    move_array = pokemon_confirmed.opponent[pokemon].moves
+                    // Make sure to use a separate reference from pokemon_confirmed
+                    move_array = JSON.parse(JSON.stringify(pokemon_confirmed.opponent[pokemon].moves))
                 }
                 var move_list = usage_stats[pokemon]["Moves"]
                 if(!("moves_sorted" in usage_stats[pokemon])){
@@ -873,9 +994,7 @@ function fill_model(){
                         //console.log("Move "+move_name+" is already in the array")
                     }
                 }
-                pokemon_model.opponent[pokemon].moves = move_array
-
-
+                pokemon_model.opponent[pokemon].moves = move_array*/
             }
             else{
                 pokemon_confirmed.opponent[pokemon][key] = needed_values[key]
@@ -883,10 +1002,67 @@ function fill_model(){
         }
     }
 
-    console.log("Finished filling model.")
+
+    //console.log(step(pokemon_combined, battle_info, {user: ["move", MOVES_SM["Earth Power"]], opponent: ["switch", "Excadrill"]}))
+}
+
+function eval_button(){
+    console.log("Starting prediction pass.")
     console.log(pokemon_confirmed)
     console.log(pokemon_model)
+    var pokemon_combined = $.extend(true, {}, pokemon_confirmed, pokemon_model)
+    console.log("Combined model:")
+    console.log(pokemon_combined)
+    console.log(battle_info)
+    /*for(var key in needed_values){
+        if(!(key in pokemon_combined.opponent["Excadrill"])){
+            console.error("Missing item: " + key)
+        }
+    }*/
+    var action_array = choose_action(pokemon_combined, battle_info, 1)
+    console.log("Action array values:")
+    console.log(action_array)
+    var max_action = null
+    var max_score = -Infinity
+    var actions_string = ""
+    for(var action in action_array){
+        actions_string += action_array[action][0][0]
+        if(action_array[action][0][0] == "switch"){
+            actions_string += " " + action_array[action][0][1] + ": " + action_array[action][1] + '\n'
+        }else{
+            //console.log(action_array[action][0][1].name)
+            actions_string += " "
+            actions_string += action_array[action][0][1]['name']
+            actions_string += ": " + action_array[action][1] + '\n'
+        }
+
+        if(max_score < action_array[action][1]){
+            max_score = action_array[action][1]
+            max_action = action_array[action][0]
+        }
+        //console.log(actions_string)
+    }
+    console.log(actions_string)
+    console.log("Chose action:")
+    console.log(max_action)
+    if(max_action[0] == "move"){
+
+        $(".movebuttons-noz").children().each(function(){
+            console.log($(this))
+            if($(this).text().indexOf(max_action[1].name) != -1){
+                console.log("This is our option!")
+            }
+        })
+    }else{
+        $(".switchmenu").children().each(function(){
+            console.log(this)
+            if($(this).text().indexOf(max_action[1].name) != -1){
+                $(this).click()
+            }
+        })
+    }
 }
+
 
 function containsObject(obj, list) {
     var i;
@@ -940,12 +1116,9 @@ function bs_callback(mutationList, observer) {
                     else if (mutation.target.className == 'userbar' && node.nodeName == "SPAN" && node.className == "username"){
                         battle_info.username.user = $(node).text().trim()
                         console.log("Loaded user ("+battle_info.username.user+")")
-
-
                     }
                 })
             }
-
         }
         // TODO: cross off parsed info for opponent as this is parsed
         // TODO: get the pokemon info for the team that will be used. (find HO team because it's easier)
@@ -958,7 +1131,10 @@ function bs_callback(mutationList, observer) {
 $(document.body).ready(function(){
     console.log("Init state");
     var battle_start_obs = new MutationObserver(bs_callback)
-
+    // Temporary fix for the move_data not having the name field filled out by default
+    for(var key in MOVES_SM){
+        MOVES_SM[key].name = key
+    }
     console.log(battle_info)
     /*for(var key in ITEMS_SM){
         var lower = ITEMS_SM[key].replace(/[^A-Z0-9]/ig, "").toLowerCase()
@@ -973,7 +1149,12 @@ $(document.body).ready(function(){
          usage_key_links[lower] = ABILITIES_SM[key]
     }*/
     //console.log(usage_key_links)
-
+    var button = document.createElement("button");
+    $(button).click(eval_button)
+    var text = document.createTextNode("Do Predict");
+    button.appendChild(text);
+    $(this).find(".header")[0].appendChild(button);
+    //console.log($(this).find(".header"))
 
     battle_start_obs.observe(document.body,observerOptions)
     $("div", $("body")).each(function(){

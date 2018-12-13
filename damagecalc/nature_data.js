@@ -1,3 +1,5 @@
+// Taken from PokemonShowdown's Damage Calculator, seen at https://github.com/Zarel/honko-damagecalc
+
 var NATURES = {
 	'Adamant': ['at', 'sa'],
 	'Bashful': ['', ''],

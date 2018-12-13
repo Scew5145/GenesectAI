@@ -539,6 +539,10 @@ var MOVES_GSC = $.extend(true, {}, MOVES_RBY, {
 	},
 	'Dig': {bp: 60},
 	'Double-Edge': {bp: 120},
+	'Dragon Dance': {
+	    bp: 0,
+	    type: 'Dragon'
+	},
 	'Dynamic Punch': {
 		bp: 100,
 		type: 'Fighting',

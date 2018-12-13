@@ -13,8 +13,10 @@
               "damagecalc/ability_data.js",
               "damagecalc/item_data.js",
               "damagecalc/nature_data.js",
+              "damagecalc/type_data.js",
               "damagecalc/damage.js",
               "predict_turn.js",
+              "eval.js",
               "background.js"
             ]
     }],

@@ -1,3 +1,5 @@
+// Taken from PokemonShowdown's Damage Calculator, seen at https://github.com/Zarel/honko-damagecalc
+
 function CALCULATE_ALL_MOVES_BW(p1, p2, field) {
 	checkAirLock(p1, field);
 	checkAirLock(p2, field);
@@ -59,14 +61,24 @@ function CALCULATE_MOVES_OF_ATTACKER_BW(attacker, defender, field) {
 	}
 	return results;
 }
-
+function buildDescription(description){
+    // A temporary override for buildDescription so that it doesn't have to do string magic right now
+    return description
+}
 function getDamageResult(attacker, defender, move, field) {
+    var ht = function(type){
+        if(this.type1 == type || this.type2 == type){
+            return true
+        }
+        return false
+    }
+    attacker.hasType = ht
+    defender.hasType = ht
 	var description = {
 		"attackerName": attacker.name,
 		"moveName": move.name,
 		"defenderName": defender.name
 	};
-
 	if (move.bp === 0) {
 		return {"damage": [0], "description": buildDescription(description)};
 	}

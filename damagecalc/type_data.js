@@ -1,3 +1,5 @@
+// Taken from PokemonShowdown's Damage Calculator, seen at https://github.com/Zarel/honko-damagecalc
+
 var TYPE_CHART_RBY = {
 	None: {
 		category: 'Physical',

@@ -1,3 +1,5 @@
+// Taken from PokemonShowdown's Damage Calculator, seen at https://github.com/Zarel/honko-damagecalc
+
 var ABILITIES_ADV = [
 	'Air Lock',
 	'Battle Armor',

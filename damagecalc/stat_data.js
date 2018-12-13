@@ -1,4 +1,6 @@
-﻿var AT = "at", DF = "df", SA = "sa", SD = "sd", SP = "sp", SL = "sl";
+﻿// Taken from PokemonShowdown's Damage Calculator, seen at https://github.com/Zarel/honko-damagecalc
+
+var AT = "at", DF = "df", SA = "sa", SD = "sd", SP = "sp", SL = "sl";
 var STATS_RBY = [AT, DF, SL, SP];
 var STATS_GSC = [AT, DF, SA, SD, SP];
 
