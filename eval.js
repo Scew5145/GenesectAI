@@ -12,10 +12,10 @@ function choose_action(pokemon_confirmed, battle_info, eval_depth){
     // TODO: More edge cases because apparently there's more of those than non-exceptions in pokemon
     // (Mega Evolutions, Z-moves)
     // For now, ignore them because this isn't an environment building class
-    console.log("Doing prediction")
-    console.log(pokemon_confirmed)
-    console.log(battle_info)
-    console.log(score(pokemon_confirmed,battle_info))
+    //console.log("Doing prediction")
+    //console.log(pokemon_confirmed)
+    //console.log(battle_info)
+    //console.log(score(pokemon_confirmed,battle_info))
     var possible_user_actions = []
     for(var i = 0; i < 4; i++){
         var action = ["move", pokemon_confirmed.user[battle_info.active_pokemon.user].moves[i]]
@@ -54,8 +54,8 @@ function choose_action(pokemon_confirmed, battle_info, eval_depth){
     var possible_hidden_actions = []
     var hidden_action_probabilities = []
     var probability_sum = 0
-    console.log("Active "+battle_info.active_pokemon.opponent)
-    console.log(pokemon_confirmed.opponent[battle_info.active_pokemon.opponent])
+    //console.log("Active "+battle_info.active_pokemon.opponent)
+    //console.log(pokemon_confirmed.opponent[battle_info.active_pokemon.opponent])
     if(!("moves" in pokemon_confirmed.opponent[battle_info.active_pokemon.opponent]) || pokemon_confirmed.opponent[battle_info.active_pokemon.opponent].moves.length != 4){
         var opp_poke_usage = usage_stats[battle_info.active_pokemon.opponent]
         for(var move_lower in opp_poke_usage["Moves"]){
@@ -88,15 +88,15 @@ function choose_action(pokemon_confirmed, battle_info, eval_depth){
         }
     }
 
-    console.log("Action arrays in ", eval_depth)
-    console.log(possible_user_actions)
-    console.log(possible_opponent_actions)
-    console.log(possible_hidden_actions)
+    //console.log("Action arrays in ", eval_depth)
+    //console.log(possible_user_actions)
+    //console.log(possible_opponent_actions)
+    //console.log(possible_hidden_actions)
 
     var action_scores = []
     for(var user_action_iter in possible_user_actions){
-        console.log("User action:")
-        console.log(possible_user_actions[user_action_iter])
+        //console.log("User action:")
+        //console.log(possible_user_actions[user_action_iter])
         var min_known_action = null
         var min_score = Infinity
         for(var opponent_action_iter in possible_opponent_actions){
@@ -127,30 +127,30 @@ function choose_action(pokemon_confirmed, battle_info, eval_depth){
                 opponent: possible_hidden_actions[hidden_action_iter],
                 user: possible_user_actions[user_action_iter]
             }
-            /*console.log("Doing hidden action:")
-            console.log(step_actions)
-            console.log(hidden_action_probabilities[hidden_action_iter])*/
+            /*//console.log("Doing hidden action:")
+            //console.log(step_actions)
+            //console.log(hidden_action_probabilities[hidden_action_iter])*/
             var step_res = step(pokemon_confirmed, battle_info, step_actions)
             var temp_model = step_res["model"]
             var temp_battle_info = step_res["battle_info"]
             hidden_score_sum += eval_turn(temp_model, temp_battle_info, eval_depth, 1)*hidden_action_probabilities[hidden_action_iter]
         }
-        /*console.log("Hidden action sum for player action:")
-        console.log(possible_user_actions[user_action_iter])
-        console.log((hidden_score_sum/probability_sum))*/
+        /*//console.log("Hidden action sum for player action:")
+        //console.log(possible_user_actions[user_action_iter])
+        //console.log((hidden_score_sum/probability_sum))*/
         if((probability_sum != 0) && ((hidden_score_sum/probability_sum) < min_score)){
             // Case: opponent probably has a move that's better than their revealed moves.
             action_scores.push(hidden_score_sum/probability_sum)
-            console.log("Worst outcome is with expectimax action:")
-            console.log(hidden_score_sum/probability_sum)
-            console.log(possible_opponent_actions[min_known_action])
-            console.log(min_score)
-            console.log(hidden_score_sum)
-            console.log(probability_sum)
+            //console.log("Worst outcome is with expectimax action:")
+            //console.log(hidden_score_sum/probability_sum)
+            //console.log(possible_opponent_actions[min_known_action])
+            //console.log(min_score)
+            //console.log(hidden_score_sum)
+            //console.log(probability_sum)
         }else{
             // Case: an existing option is probably better than any existing hidden option.
-            console.log("Worst outcome is with the following opponent action:")
-            console.log(possible_opponent_actions[min_known_action])
+            //console.log("Worst outcome is with the following opponent action:")
+            //console.log(possible_opponent_actions[min_known_action])
             action_scores.push(min_score)
         }
     }
@@ -231,17 +231,17 @@ function eval_turn(model, battle_info, eval_depth, current_depth){
             }
         }
     }
-    console.log(hidden_action_probabilities)
+    //console.log(hidden_action_probabilities)
 
-    /*console.log("Action arrays")
-    console.log(possible_user_actions)
-    console.log(possible_opponent_actions)
-    console.log(possible_hidden_actions)*/
+    /*//console.log("Action arrays")
+    //console.log(possible_user_actions)
+    //console.log(possible_opponent_actions)
+    //console.log(possible_hidden_actions)*/
 
     var action_scores = []
     for(var user_action_iter in possible_user_actions){
-        console.log("User action:")
-        console.log(possible_user_actions[user_action_iter])
+        //console.log("User action:")
+        //console.log(possible_user_actions[user_action_iter])
         var min_known_action = null
         var min_score = Infinity
         for(var opponent_action_iter in possible_opponent_actions){
@@ -279,13 +279,13 @@ function eval_turn(model, battle_info, eval_depth, current_depth){
 
         if((probability_sum != 0) && ((hidden_score_sum/probability_sum) < min_score)){
             // Case: opponent probably has a move that's better than their revealed moves.
-            console.log("Worst outcome is an expectimax node:")
-            console.log(hidden_score_sum/probability_sum)
+            //console.log("Worst outcome is an expectimax node:")
+            //console.log(hidden_score_sum/probability_sum)
             action_scores.push(hidden_score_sum/probability_sum)
         }else{
             // Case: an existing option is probably better than any existing hidden option.
-            console.log("Worst outcome is with the following opponent action:")
-            console.log(min_known_action)
+            //console.log("Worst outcome is with the following opponent action:")
+            //console.log(min_known_action)
             action_scores.push(min_score)
         }
     }

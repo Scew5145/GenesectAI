@@ -265,7 +265,7 @@ var pokemon_confirmed = {
             weight: 14.5
         },
         "Tyranitar":{
-            name: "Tyranitar-Mega",
+            name: "Tyranitar",
             rawStats: {
                 at: 469,
                 df: 336,
@@ -295,7 +295,7 @@ var pokemon_confirmed = {
             ],
             nature: "Adamant",
             HPEVs: 104,
-            item: "Tyranitarite",
+            item: "Leftovers",
             ability: "Sand Stream",
             maxHP: 367,
             curHP: 367,
@@ -380,7 +380,7 @@ function import_relevant_usage_stats(usage_json){
         return
     }
     const url = chrome.runtime.getURL('data/lower_to_upper.json');
-    // console.log(usage_json)
+    //console.log(usage_json)
     fetch(url).then((response) => response.json()).then((json) => {
         usage_key_links = json
         get_active_field()
@@ -390,7 +390,7 @@ function import_relevant_usage_stats(usage_json){
     for (var key in pokemon_confirmed.opponent){
         usage_stats[key] = usage_json.data[key]
     }
-    console.log(usage_stats)
+    //console.log(usage_stats)
 
 }
 
@@ -474,11 +474,11 @@ function get_turn_information(turn_end_header){
             // They contain the user's username, and the teams, separated by spaced forward slashes
 
             var temp_username = $(this).find("strong").text().slice(0, -8).trim()
-            // console.log(temp_username + " temp user")
+            //console.log(temp_username + " temp user")
             if (battle_info.username.user != temp_username && battle_info.username.user){
                 battle_info.username.opponent = temp_username
                 var team_string = $(this).find("em").text()
-                // console.log(team_string)
+                //console.log(team_string)
                 var team_split = team_string.split("/") // Don't need to worry about nicknames here
                 team_split = team_split.map(s => s.trim())
                 team_split.forEach(function(enemy_poke){
@@ -502,9 +502,9 @@ function get_turn_information(turn_end_header){
 
             }else{
                 // TODO: Blank username race condition fix
-                // console.log("Not opponent username or blank user.username:")
-                // console.log(temp_username)
-                // console.log(battle_info.username.user)
+                //console.log("Not opponent username or blank user.username:")
+                //console.log(temp_username)
+                //console.log(battle_info.username.user)
             }
 
         }
@@ -516,7 +516,7 @@ function get_turn_information(turn_end_header){
             // TODO: This runs into errors if nickname contains " used ". fix eventually when bored
             var move = {}
             if(info_string.indexOf(" used ") == -1){
-                console.log("Skipping opposing info case: "+info_string)
+                //console.log("Skipping opposing info case: "+info_string)
                 return
             }
             var nickname = info_string.substring(13, info_string.indexOf(" used "))
@@ -531,7 +531,7 @@ function get_turn_information(turn_end_header){
 
             if(enemy_poke){
                 if (move.isZ){
-                    console.log("Z move case. Need to assign item")
+                    //console.log("Z move case. Need to assign item")
                 }
                 else if(!enemy_poke.moves){
                     enemy_poke.moves = []
@@ -559,7 +559,7 @@ function get_turn_information(turn_end_header){
                 parsed_nick = parsed_nick.slice(0, -2)
             }
             else{
-                console.log("("+parsed_nick+")")
+                //console.log("("+parsed_nick+")")
                 parsed_nick = parsed_nick.replace('(' +poke_name+ ')', '').slice(0,-3)
             }
             battle_info.nicknames.opponent[parsed_nick] = poke_name
@@ -673,7 +673,7 @@ function parse_team_list(list_node){
     //console.log("Parsing team list for " + me_or_them)
     //console.log($(list_node).find(".picon"))
     var icons = $(list_node).find(".picon").each(function(){
-        // console.log(this)
+        //console.log(this)
         var icon_text = this.title
         // First, parse HP or active status
         var last_parens = icon_text.slice(icon_text.lastIndexOf("(")+1,icon_text.lastIndexOf(")"))
@@ -710,9 +710,9 @@ function parse_team_list(list_node){
             poke_text = icon_text
         }else{
             console.error("Something is broken with parsing pokemon name for user list. i_t, l_p")
-            console.log(icon_text)
-            console.log(last_parens)
-            console.log(me_or_them)
+            //console.log(icon_text)
+            //console.log(last_parens)
+            //console.log(me_or_them)
         }
         if(!active_poke){
             //console.log(pokemon_confirmed[me_or_them][poke_text])
@@ -725,7 +725,7 @@ function parse_team_list(list_node){
                 sp: 1
             }
         }else{
-            console.log("Active pokemon: "+poke_text+" "+me_or_them)
+            //console.log("Active pokemon: "+poke_text+" "+me_or_them)
             battle_info.active_pokemon[me_or_them] = poke_text
         }
 
@@ -735,8 +735,8 @@ function parse_team_list(list_node){
         }
 
         if(hp_float != -1){
-            console.log("HP FLOAT:")
-            console.log(hp_float)
+            //console.log("HP FLOAT:")
+            //console.log(hp_float)
             if(pokemon_confirmed[me_or_them][poke_text].maxHP){
                 pokemon_confirmed[me_or_them][poke_text].curHP = pokemon_confirmed[me_or_them][poke_text].maxHP*hp_float
             }else{
@@ -790,7 +790,7 @@ function parse_statbar_node(statbar_node){
     //if(battle_info["nicknames"]){
     poke_name = battle_info["nicknames"][me_or_them][nickname]
     /*}else{
-        console.log("Haven't loaded nickname " + nickname + "for the " + me_or_them + "yet. Returning.")
+        //console.log("Haven't loaded nickname " + nickname + "for the " + me_or_them + "yet. Returning.")
         return
     }*/
     //console.log(nickname +" "+ me_or_them)
@@ -802,10 +802,10 @@ function parse_statbar_node(statbar_node){
     pokemon_confirmed[me_or_them][poke_name].gender = gender == "M" ? "male" : gender == "F" ? "female" : "genderless"
 
     // Active pokemon health
-    console.log()
+    //console.log()
     var hp_percent = parseFloat($(statbar_node).find(".hptext").text().slice(0,-1))
-    console.log("HP percent:")
-    console.log(hp_percent)
+    //console.log("HP percent:")
+    //console.log(hp_percent)
     if(pokemon_confirmed[me_or_them][poke_name].maxHP){
         pokemon_confirmed[me_or_them][poke_name].curHP = hp_percent*0.01*pokemon_confirmed[me_or_them][poke_name].maxHP
     }else{
@@ -875,9 +875,9 @@ function fill_model(){
         gender: "genderless" // Only important for rivalry / (eventually) attract. Might make sense to randomize it in the future
     }
     for(var pokemon in pokemon_confirmed.opponent){
-        console.log("Doing model for "+pokemon)
+        //console.log("Doing model for "+pokemon)
         if(!(pokemon in usage_stats)){
-            console.log("Accessed usage_stats before loaded. Returning early.")
+            //console.log("Accessed usage_stats before loaded. Returning early.")
             return
         }
 
@@ -936,7 +936,7 @@ function fill_model(){
                             //console.log("model prev_hp is false")
 
                             pokemon_model.opponent[pokemon].curHP = pokemon_model.opponent[pokemon].maxHP
-                            console.log(pokemon_model.opponent[pokemon])
+                            //console.log(pokemon_model.opponent[pokemon])
                         }
 
                     }
@@ -946,7 +946,7 @@ function fill_model(){
                 var most_used_lower = max_key(usage_stats[pokemon]["Abilities"])
                 var most_used_abil = usage_key_links[most_used_lower]
                 if(!most_used_abil){
-                    console.log("Left before ability was loaded because of bad usage data.")
+                    //console.log("Left before ability was loaded because of bad usage data.")
                     return
                 }
                 //console.log("Ability")
@@ -1007,21 +1007,21 @@ function fill_model(){
 }
 
 function eval_button(){
-    console.log("Starting prediction pass.")
-    console.log(pokemon_confirmed)
-    console.log(pokemon_model)
+    //console.log("Starting prediction pass.")
+    //console.log(pokemon_confirmed)
+    //console.log(pokemon_model)
     var pokemon_combined = $.extend(true, {}, pokemon_confirmed, pokemon_model)
-    console.log("Combined model:")
-    console.log(pokemon_combined)
-    console.log(battle_info)
+    //console.log("Combined model:")
+    //console.log(pokemon_combined)
+    //console.log(battle_info)
     /*for(var key in needed_values){
         if(!(key in pokemon_combined.opponent["Excadrill"])){
             console.error("Missing item: " + key)
         }
     }*/
     var action_array = choose_action(pokemon_combined, battle_info, 1)
-    console.log("Action array values:")
-    console.log(action_array)
+    //console.log("Action array values:")
+    //console.log(action_array)
     var max_action = null
     var max_score = -Infinity
     var actions_string = ""
@@ -1042,20 +1042,20 @@ function eval_button(){
         }
         //console.log(actions_string)
     }
-    console.log(actions_string)
+    //console.log(actions_string)
     console.log("Chose action:")
     console.log(max_action)
     if(max_action[0] == "move"){
 
         $(".movebuttons-noz").children().each(function(){
-            console.log($(this))
+            //console.log($(this))
             if($(this).text().indexOf(max_action[1].name) != -1){
-                console.log("This is our option!")
+                //console.log("This is our option!")
             }
         })
     }else{
         $(".switchmenu").children().each(function(){
-            console.log(this)
+            //console.log(this)
             if($(this).text().indexOf(max_action[1].name) != -1){
                 $(this).click()
             }
@@ -1102,7 +1102,7 @@ function bs_callback(mutationList, observer) {
                 // TODO: Teardown for battle finish when necessary
                 mutation.addedNodes.forEach((node)=>{
                     if (node.id && node.id.includes("room-battle-gen7ou") && node.tagName == "DIV"){
-                        console.log(node)
+                        //console.log(node)
                         room = node
                     }
                     else if (node.className && node.className.includes('battle-history')){
@@ -1115,7 +1115,7 @@ function bs_callback(mutationList, observer) {
                     }
                     else if (mutation.target.className == 'userbar' && node.nodeName == "SPAN" && node.className == "username"){
                         battle_info.username.user = $(node).text().trim()
-                        console.log("Loaded user ("+battle_info.username.user+")")
+                        //console.log("Loaded user ("+battle_info.username.user+")")
                     }
                 })
             }
@@ -1129,13 +1129,13 @@ function bs_callback(mutationList, observer) {
 }
 
 $(document.body).ready(function(){
-    console.log("Init state");
+    //console.log("Init state");
     var battle_start_obs = new MutationObserver(bs_callback)
     // Temporary fix for the move_data not having the name field filled out by default
     for(var key in MOVES_SM){
         MOVES_SM[key].name = key
     }
-    console.log(battle_info)
+    //console.log(battle_info)
     /*for(var key in ITEMS_SM){
         var lower = ITEMS_SM[key].replace(/[^A-Z0-9]/ig, "").toLowerCase()
         usage_key_links[lower] = ITEMS_SM[key]
@@ -1158,11 +1158,11 @@ $(document.body).ready(function(){
 
     battle_start_obs.observe(document.body,observerOptions)
     $("div", $("body")).each(function(){
-        // console.log(this)
+        //console.log(this)
         if (this.id && this.id.includes("room-battle-gen7ou") && this.tagName == "DIV"){
             room = this
-            console.log(this)
+            //console.log(this)
         }
     })
-    console.log("done body")
+    //console.log("done body")
 });
