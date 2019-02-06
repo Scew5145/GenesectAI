@@ -113,9 +113,9 @@ function Boost(model, battle_info, target, boost_array, chance=1){
         var stage = numerator - denominator
         stage += b_obj[1]
         if(stage < 0){
-            boosts[b_obj[0]] = 2/(2 - stage)
+            boosts[b_obj[0]] = Math.max(0.25, 2/(2 - stage))
         }else{
-            boosts[b_obj[0]] = (2+stage)/2
+            boosts[b_obj[0]] = Math.min(4, (2+stage)/2)
         }
     }
     if (chance != 1){
